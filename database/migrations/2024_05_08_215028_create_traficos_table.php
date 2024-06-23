@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('traficos', function (Blueprint $table) {
             $table->id(); // clave primaria
             $table->foreignId('cliente_id')->nullable(); // clave foránea
-            $table->foreignId('pedimento_id')->nullable(); // clave foránea
             $table->string('operacion')->nullable(); // operación
             $table->foreignId('embarque_id')->nullable(); // clave foránea
             $table->string('folioTransporte')->nullable(); // folio de transporte
