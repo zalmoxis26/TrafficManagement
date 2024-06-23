@@ -13,7 +13,7 @@ use App\Http\Controllers\CommentController;
 
 
 
-
+Auth::routes();
 
 Route::get('/', function () {
     return view('welcome');
@@ -131,7 +131,7 @@ Route::middleware(['auth', 'role:admin|cliente'])->group(function () {
 
 });
 
-Auth::routes();
+
 
 
 
