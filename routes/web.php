@@ -4,10 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmpresaController; // Verifica esta línea
 use App\Http\Controllers\PedimentoController; // Verifica esta línea
 use App\Http\Controllers\TraficoController;// Verifica esta línea
-use App\http\Controllers\EmbarqueController;
-use App\http\Controllers\UsersEmpresaController;
-use App\http\Controllers\RevisioneController;
-use App\http\Controllers\AnexoController;
+use App\Http\Controllers\EmbarqueController;
+use App\Http\Controllers\UsersEmpresaController;
+use App\Http\Controllers\RevisioneController;
+use App\Http\Controllers\AnexoController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\CommentController;
 
