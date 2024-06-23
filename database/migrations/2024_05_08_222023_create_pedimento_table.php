@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('aduana')->nullable(); ; // nombre de la aduana
             $table->string('patente')->nullable(); ; // patente de aduana
             $table->string('clavePed')->nullable(); ; // clave del pedimento
-            $table->date('fechaPed')->default(DB::raw('CURRENT_DATE')); 
+            $table->date('fechaPed'); 
             $table->string('adjunto')->nullable(); // archivo adjunto (puede ser nulo)
             $table->timestamps(); // timestamp para created_at y updated_at
         });
