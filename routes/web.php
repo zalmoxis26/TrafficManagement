@@ -131,7 +131,7 @@ Route::middleware(['auth', 'role:admin|cliente'])->group(function () {
 
 });
 
-
+Auth::routes();
 
 
 
