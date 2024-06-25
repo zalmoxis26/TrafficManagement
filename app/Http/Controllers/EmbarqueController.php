@@ -243,7 +243,7 @@ class EmbarqueController extends Controller
         foreach ($embarque->traficos as $trafico) {
             Historial::create([
                 'trafico_id' => $trafico->id,
-                'nombre' => 'EMBARQUE ACTUALIZADO',
+                'nombre' => 'Embarque Actualizado',
                 'descripcion' => 'El Embarque: ' .  $embarque->numEmbarque . ' ha sido Actualizado',
                 'hora' => Carbon::now('America/Los_Angeles'),
             ]);
