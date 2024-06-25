@@ -59,4 +59,9 @@ class User extends Authenticatable
         return $this->hasMany(Comment::class, 'user_id');
     }
 
+    public function isAdmin()
+    {
+        return $this->role === 'admin'; // Asume que hay una columna 'role' en tu tabla de usuarios
+    }
+
 }

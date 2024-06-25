@@ -305,21 +305,22 @@ class TraficoController extends Controller
         $nuevoNombre = $nombreOriginal . '_' . Str::uuid() . '.' . $extension;
 
         // Guardar el archivo en la carpeta de anexos con el nuevo nombre
-        $nuevaRuta = 'public/Anexos/AnexoTrafico_' . $trafico->id . '/' . $nuevoNombre;
+        $nuevaRuta = 'public/Historial/FacturaSustituidaTrafico_' . $trafico->id . '/' . $nuevoNombre;
         Storage::move($rutaFacturaAnterior, $nuevaRuta);
 
         // Eliminar 'public/' de la ruta antes de guardar en la base de datos
         $rutaArchivo = str_replace('public/', '', $nuevaRuta);
 
-        // Crear el registro del anexo en la base de datos
-        $anexo = new Anexo();
-        $anexo->descripcion = "FACTURA CON ERRORES, SE SUSTITUYO";
-        $anexo->archivo = $rutaArchivo;
-        $anexo->asunto = "FACTURA ANTERIOR";
-        $anexo->save();
 
-        // Crear la relación en la tabla pivote
-        $trafico->anexos()->attach($anexo->id);
+     // Registrar el evento en el historial
+     Historial::create([
+        'trafico_id' => $trafico->id,
+        'nombre' => 'Sustitucion de Factura(Anterior)',
+        'descripcion' => 'Factura No valida, Sustituida por cambio o errores en la misma.',
+        'hora' => Carbon::now('America/Los_Angeles'),
+        'adjunto' => $rutaArchivo,
+    ]);
+
     }
         // Guardar el archivo en storage/public/adjuntosFacturas
         
@@ -341,15 +342,17 @@ class TraficoController extends Controller
             $trafico->save();
 
             event(new FacturaUpdated($trafico));
-            
+
              // Registrar el evento en el historial
-         Historial::create([
-            'trafico_id' => $trafico->id,
-            'nombre' => 'Recepcion de Factura(Sustitucion)',
-            'descripcion' => 'Recepcion de Factura Correcta por cambio o error en Factura anterior.',
-            'hora' => Carbon::now('America/Los_Angeles'),
-            'adjunto' => $trafico->adjuntoFactura,
-        ]);
+     Historial::create([
+        'trafico_id' => $trafico->id,
+        'nombre' => 'Recepcion de Factura(Nueva)',
+        'descripcion' => 'Recepcion de Factura Correcta por cambio o error en Factura anterior.',
+        'hora' => Carbon::now('America/Los_Angeles'),
+        'adjunto' => $trafico->adjuntoFactura,
+    ]);
+            
+        
 
         // Redirigir con un mensaje de éxito
         return redirect()->back()->with('success', 'Factura sustituida exitosamente.');

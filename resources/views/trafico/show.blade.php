@@ -6,8 +6,20 @@
           
         }
 
+        .circle {
+        width: 13px;
+        height: 13px;
+        background-color: #c8e6c9 ;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 5px;
+    }
+
 
 </style>    
+
+
+   
 
 
 
@@ -194,12 +206,12 @@
 
                 @php
                     
-                    $tieneAdjuntoValido = !is_null($historial->adjunto) && Storage::disk("public")->exists($historial->adjunto);
+                    $tieneAdjuntoValido = !is_null($historial->adjunto);
                 
             
                 @endphp
                         <li class="list-group-item @if($tieneAdjuntoValido) fondo-verde @endif">
-                        @if(\Str::startsWith(strtolower(trim($historial->nombre)), 'recepcion') && $tieneAdjuntoValido)
+                        @if($tieneAdjuntoValido)
                             <a href="{{ Storage::url($historial->adjunto) }}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:black;">
                                 <strong>{{ $historial->nombre }}</strong><br>
                                 <span>{{ $historial->descripcion }}</span><br>
@@ -218,7 +230,11 @@
                     <p class="text-muted">No hay historiales disponibles.</p>
                 @endif
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer d-flex justify-content-between">
+                <div class="d-flex align-items-center">
+                    <span class="circle"></span>
+                    <span>Si el registro tiene adjunto, fondo verde.</span>
+                </div>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>

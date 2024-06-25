@@ -9,10 +9,13 @@ use App\Http\Requests\RevisioneRequest;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 use App\Models\Historial;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 use App\Events\RevisionUpdated;
 use Spatie\Permission\Models\Role;
 use App\Models\User;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class RevisioneController extends Controller
 {
@@ -140,6 +143,32 @@ class RevisioneController extends Controller
 
         // Procesar el archivo adjunto
         if ($request->hasFile('adjuntoRevision')) {
+
+
+            // Verificar si ya hay un archivo de revisión adjunto
+            if ($revisione->adjuntoRevision) {
+                $nombreOriginal = pathinfo($revisione->adjuntoRevision, PATHINFO_FILENAME);
+                $extension = pathinfo($revisione->adjuntoRevision, PATHINFO_EXTENSION);
+                $nuevoNombreRevision = $nombreOriginal . '_' . Str::uuid() . '.' . $extension;
+
+                $oldFilePath = storage_path('app/public/' . $revisione->adjuntoRevision);
+                $historialPath = 'Historial/RevisionSustituidaTrafico_' . $revisione->traficos()->first()->id . '/' . $nuevoNombreRevision;
+
+                // Mover el archivo actual a Historial/RevisionSustituida
+                if (File::exists($oldFilePath)) {
+                    Storage::disk('public')->move($revisione->adjuntoRevision, $historialPath);
+
+                    // Crear un historial para la sustitución de la revisión
+                    Historial::create([
+                        'trafico_id' => $trafico->id,
+                        'nombre' => 'Sustitucion Revision (Anterior)',
+                        'descripcion' => 'Se ha sustituido el archivo de revision anterior.',
+                        'hora' => Carbon::now('America/Los_Angeles'),
+                        'adjunto' => $historialPath,
+                    ]);
+                }
+            }
+
             $file = $request->file('adjuntoRevision');
             $fileName =  $file->getClientOriginalName();
             $filePath = $file->storeAs('Revisiones/RevisionTrafico_' . $revisione->traficos()->first()->id , $fileName, 'public');
@@ -151,7 +180,7 @@ class RevisioneController extends Controller
 
             Historial::create([
                 'trafico_id' => $trafico->id,
-                'nombre' => 'Recepcion Archivo Revision',
+                'nombre' => 'Recepcion Nuevo Archivo Revision',
                 'descripcion' => 'Se han adjuntado archivos de revision.',
                 'hora' => Carbon::now('America/Los_Angeles'),
                 'adjunto' =>  $revisione->adjuntoRevision,
