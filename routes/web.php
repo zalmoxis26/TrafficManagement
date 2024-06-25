@@ -100,7 +100,7 @@ Route::middleware(['auth', 'role:admin|documentador'])->group(function () {
         Route::post('/roles/update-roles', [UserRoleController::class, 'update'])->name('users.update-roles');
         Route::get('/roles/{user}/edit', [UserRoleController::class, 'edit'])->name('users.edit');
         Route::put('/roles/{user}/update-roles', [UserRoleController::class, 'updateRoles'])->name('roles.update-roles');
-
+        Route::delete('/roles/{user_id}/', [UserRoleController::class, 'deleteRole'])->name('roles.delete');
 
 
 });

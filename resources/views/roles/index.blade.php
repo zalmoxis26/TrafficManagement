@@ -17,6 +17,7 @@
                         <tr>
                             <th>Nombre</th>
                             <th>Correo Electrónico</th>
+                            <th class="text-center">Fecha Actualizacion </th>
                             <th  class="text-center">Rol Asignado</th>
                             <th  class="text-center">Acciones</th>
                         </tr>
@@ -26,6 +27,7 @@
                         <tr>
                             <td>{{ $user->name }}</td>
                             <td>{{ $user->email }}</td>
+                            <td class="text-center">{{\Carbon\Carbon::parse($user->updated_at)->format('d-M-Y H:i')}}</td>
                             <td class="text-center">
                                 @foreach($user->roles as $role)
                                     @if($role->name == 'revisor')
@@ -41,9 +43,19 @@
                                     @endif
                                 @endforeach
                             </td>
-                            <td  class="text-center">
-                                <a href="{{ route('users.edit', $user->id) }}" class="btn btn-success btn-sm"><i class="bi bi-pencil"></i> Editar</a>
-                            </td>
+                            <td class="text-center">
+                                <a href="{{ route('users.edit', $user->id) }}" class="btn btn-success btn-sm d-inline-block">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </a>
+                                <form action="{{ route('roles.delete', $user->id) }}" method="POST" class="d-inline-block" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este rol?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <input value="{{$user->id}}" name="user_id"  hidden> 
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="bi bi-trash"></i> Borrar
+                                    </button>
+                                </form>
+                            </td>                            
                         </tr>
                         @endforeach
                     </tbody>

@@ -56,7 +56,7 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="patente" class="form-label">Patente</label>
-                                <input type="text" class="form-control" id="patente" name="patente" value="3621" placeholder="Ingrese patente" required>
+                                <input type="text" class="form-control" id="patente" name="patente" value="3875" placeholder="Ingrese patente" required>
                             </div>
                         </div> 
                           <!-- Fecha -->
@@ -145,9 +145,11 @@
                     </div>  
                    
                           
-
-                    <!-- Botón para enviar -->
-                    <button type="submit" class="btn btn-primary">Enviar</button>
+                    <div class="float-end">
+                        <!-- Botón para enviar -->
+                    <button type="submit" class="btn btn-primary">Subir Factura</button>
+                    </div>        
+                    
                 </form>
             </div>
         </div>

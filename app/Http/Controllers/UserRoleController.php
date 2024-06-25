@@ -11,8 +11,12 @@ class UserRoleController extends Controller
 {
 
     public function index()
+
     {
-        $users = User::with('roles')->get();
+        $users = User::whereHas('roles')->with('roles')->orderBy('created_at', 'DESC')->get();
+
+    
+
         return view('roles.index', compact('users'));
     }
 
@@ -49,5 +53,19 @@ class UserRoleController extends Controller
 
         return redirect()->route('roles.index')->with('success', 'Roles actualizados correctamente.');
     }
+
+    public function deleteRole( $user_id)
+    {
+        
+        // Eliminar el rol específico del usuario
+        DB::table('model_has_roles')
+            ->where('model_id', $user_id)
+            ->delete();
+
+        return redirect()->route('roles.index')->with('success', 'Rol eliminado correctamente.');
+    }
+
+
+    
 
 }
