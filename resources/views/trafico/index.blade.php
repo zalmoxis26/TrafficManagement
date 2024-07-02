@@ -19,48 +19,7 @@
     </style>
 
 
-<!-- NAVBAR-->
-<!--
-<div class="d-flex justify-content-between align-items-center ">
-    <div class="left-container pb-4 mx-4 d-flex align-items-center">
-        <select class="form-select me-3" aria-label="Default select example">
-            <option selected>Open this select menu</option>
-        @foreach($traficos as $trafico)
-            <option value="{{$trafico->empresa->descripcion}}">{{$trafico->empresa->descripcion}}</option>
-         @endforeach   
-            
-        </select>
-        <button id="btnBuscar" class="sila-button search-button" title="Buscar"><i class="bi bi-search"></i></button>
-    </div>
-    
 
-    <div class="right-container d-flex align-items-center mb-4">
-        <div class="search me-3" style="flex: 1;">
-            <div class="sila-field button-in grid-container-3-cols-search">
-                <form>
-                    <input id="txtBuscarParametro" class="input-sila-search" style="width: calc(100% - 40px);" placeholder="Ingresar factura o pedimento" autocomplete="off">
-                    <button id="btnBuscar" class="sila-button search-button" title="Buscar"><i class="bi bi-search"></i></button>
-                </form>
-            </div>
-        </div>
-    
-        <div id="date-container" class="d-flex align-items-center me-4">
-            <div class="sila-field me-3">
-                <label id="lblPeriodoInicial" class="sila-label">De</label>
-            </div>
-            <div class="sila-field me-3">
-                <input id="txtFechaInicio" class="input-date" type="date">
-            </div>
-            <div class="sila-field me-3">
-                <label id="lblPeriodoFinal" class="sila-label">Hasta</label>
-            </div>
-            <div class="sila-field me-3">
-                <input id="txtFechaFinal" class="input-date" type="date" >
-            </div>
-            <button id="btnBuscarPorFecha" class="sila-button" title="Buscar por fecha"><i class="bi bi-search"></i></button>
-        </div>
-    </div>
--->
     
 </div>
 

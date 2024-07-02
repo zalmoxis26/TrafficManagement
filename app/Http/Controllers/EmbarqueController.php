@@ -51,11 +51,64 @@ class EmbarqueController extends Controller
     // Convertir la cadena de IDs a un array
     $trafico_ids_array = explode(',', $trafico_ids);
 
-    // Buscar los traficos que ya tienen embarque asignado
-    $traficosConEmbarque = Trafico::whereIn('id', $trafico_ids_array)->whereNotNull('embarque')->get();
 
-    if ($traficosConEmbarque->isNotEmpty()) {
-        return redirect()->back()->with('error', 'UNO O MÁS TRAFICOS YA TIENEN EMBARQUE ASIGNADO');
+    // Buscar los traficos que ya tienen embarque asignado
+    $traficosConEmbarque = Trafico::whereIn('id', $trafico_ids_array)->whereHas('embarques')->get();
+    
+    $traficosSinEmbarque = Trafico::whereIn('id', $trafico_ids_array)->whereDoesntHave('embarques')->pluck('id');
+
+   
+
+  //ENCONTRAR SI HAY MAS DE 2 EMBARQUES DISTINTOS 
+
+    $numEmbarques = [];
+
+    // Iterar sobre los tráficos con embarque y extraer los números de embarque
+    foreach ($traficosConEmbarque as $trafico) {
+        foreach ($trafico->embarques as $embarque) {
+        
+            if (!in_array($embarque->numEmbarque, $numEmbarques)) {
+                $numEmbarques[] = $embarque->numEmbarque;
+                // Si encontramos más de un número de embarque diferente, redirigir con error
+                if (count($numEmbarques) > 1) {
+                    return redirect()->back()->with('error', 'Se encontraron 2 o mas embarques asignados.');
+                }
+            }
+        }
+    }
+
+    //SI TODOS LOS EMBARQUES SON IGUALES, ASI EVITAMOS QUE SI SON IGUALES CREE UNO NUEVO
+
+    if(count($numEmbarques) === 1  && $traficosSinEmbarque->isEmpty() ){
+        return redirect()->back()->with('error', 'Todos los traficos seleccionados cuentan con un embarque Asignado.');
+    }
+
+
+    //AQUI ASIGNAMOS LOS TRAFICOS SIN EMBARQUE CON LOS TRAFICOS QUE SI TIENE
+
+    if ($traficosConEmbarque->isNotEmpty() && $traficosSinEmbarque->isNotEmpty() ) {
+        // Obtener el embarque de uno de los tráficos con embarque asignado
+        $embarqueExistente = $traficosConEmbarque->first()->embarques->first();
+
+        // Asignar el embarque existente a todos los tráficos seleccionados
+        foreach ( $traficosSinEmbarque as $trafico_id) {
+
+            $trafico = Trafico::find($trafico_id);
+            $trafico->embarques()->syncWithoutDetaching($embarqueExistente->id);
+            $trafico->update(['embarque' => $embarqueExistente->numEmbarque]);
+
+            Historial::create([
+                'trafico_id' => $trafico_id,
+                'nombre' => 'Nuevo Embarque Asignado',
+                'descripcion' => 'Se ha asignado el embarque ' . $embarqueExistente->numEmbarque . ' al tráfico.',
+                'hora' => Carbon::now('America/Los_Angeles'),
+            ]);
+
+
+        }
+
+        return redirect()->back()->with('success', 'Se ha asignado el embarque existente a todos los tráficos seleccionados.');
+
     }
 
     $embarque = new Embarque();
@@ -105,10 +158,19 @@ class EmbarqueController extends Controller
     public function desasignarFromTrafico(Request $request)
     {
            
+         // Validar si no se han seleccionado traficos
+         if (empty($request->trafico_des)) {
+
+            return redirect()->back()->with('error', 'SELECCIONA ALMENOS UN TRAFICO A DESASIGNAR');
+        }
+
         // Obtener los IDs de tráfico de la solicitud
         $trafico_ids = explode(',', $request->trafico_des);
+         
         // Buscar todos los tráficos
         $traficos = Trafico::whereIn('id', $trafico_ids)->get();
+
+      
 
         // Desasociar los tráficos de todos los embarques asociados
         foreach ($traficos as $trafico) {

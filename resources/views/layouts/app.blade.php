@@ -82,7 +82,7 @@
         <nav class="navbar navbar-expand-md navbar-dark bg-dark  shadow-sm">
             <div class="container">
                 <a class="navbar-brand" href="{{ url('/') }}">
-                    Traffic Management
+                    <img src="{{ asset('storage/SolucionAduanal-Integral-SAI-LOGO.png') }}" alt="LogoSAI" width="18%"/><span> Tracking Management System</span>
                 </a>
 
               

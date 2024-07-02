@@ -24,7 +24,45 @@
 </div>
 
 
-    <div class="container-fluid">
+    <div class="container-fluid" style="margin-top: -23px;">
+        <div class="row">    
+        <!-- NAVBAR-->
+        <div class="mb-3 text-white" >
+            <div class="d-flex justify-content-between align-items-center bg-dark pt-3 pb-3 rounded-3" >
+                <div class="left-container  mx-4 d-flex align-items-center">
+                    <label for="empresaSelect" class="form-label fs-5 me-1">Empresa:</label>
+                    <select class="form-select  me-3" name="empresaSelect" id="empresaSelect" aria-label="Default select example">
+                        <option selected value="00">TODAS LAS EMPRESAS</option>
+                            @foreach($userEmpresas as $userEmpresa)
+                                <option value="{{ $userEmpresa->empresa->id }}" {{ old('empresaSelect', $request->empresaSelect) == $userEmpresa->empresa->id ? 'selected' : '' }}>
+                                    {{ $userEmpresa->empresa->descripcion }}
+                                </option>
+                            @endforeach 
+                    </select>
+                    <button id="btnBuscar" class="btn btn-md btn-primary" title="Buscar"><i class="bi bi-search"></i></button>
+                </div>
+                
+                <div class="right-container d-flex align-items-center">
+                    <div id="date-container" class="d-flex align-items-center me-4">
+                        <div class="me-3">
+                            <label id="lblFechaInicial" for="txtFechaInicio"  class="fs-5 form-label">Desde:</label>
+                        </div>
+                        <div class="me-3">
+                            <input id="txtFechaInicio" name="fechaInicio" value="{{ old('fechaInicio', $request->fechaInicio ?? $fechaInicio) }}" class="form-control" type="date">
+                        </div>
+                        <div class="me-3">
+                            <label id="fechaFin" name="fechaFin" for="txtFechaFin" class="fs-5 form-label">Hasta:</label>
+                        </div>
+                        <div class="me-3">
+                            <input id="txtFechaFin" name="fechaFin" value="{{ old('fechaFin', $request->fechaFin ?? $fechaFin) }}" class="form-control" type="date">
+                        </div>
+                        <button id="btnBuscarPorFecha" class="btn btn-md btn-primary" title="Buscar por fecha"><i class="bi bi-search"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
@@ -67,7 +105,7 @@
                                 <div class="dropdown-menu dropdown-menu-lg-end p-3 me-3" aria-labelledby="dropdownMenuButton">
                                     <!-- Botones dentro del dropdown -->
                                     <a href="{{route('revisiones.index')}}" class="btn dropdown-item text-white fs-5 text-center rounded-btn hover-btn">Revisión</a>
-                                    <a href="{{route('traficoDesdeFactura')}}" class="btn dropdown-item mt-2 mb-2 text-white fs-5 text-center rounded-btn hover-btn">Transmitir Factura</a>
+                                    <a href="{{route('traficoDesdeFactura')}}" class="btn dropdown-item mt-2 mb-2 text-white fs-5 text-center rounded-btn hover-btn">Subir Factura</a>
                                     <a href="{{route('traficos.index')}}" class="btn dropdown-item mt-2 mb-2 text-white fs-5 text-center rounded-btn hover-btn">Traficos Abiertos</a>
                                 </div>
                             </div>
@@ -101,6 +139,17 @@
                         </div>
                     </div>
                 -->
+
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                     <div class="card-body text-center bg-light pt-0">
                         <div class="table-responsive">
                             <table id="table-traficos" class="table table-striped table-hover align-middle" >
@@ -415,6 +464,35 @@
             $('.dataTables_filter input').val('');
             tabla.search('').draw();
         });
+
+
+        //SCRIPT PARA LOS FILTROS EMPRESA Y FECHA 
+
+        document.getElementById('btnBuscar').addEventListener('click', function() {
+            const empresaSelect = document.getElementById('empresaSelect').value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('empresaSelect', empresaSelect);
+            window.location.href = url;
+        });
+
+        document.getElementById('btnBuscarPorFecha').addEventListener('click', function() {
+            const fechaInicio = document.getElementById('txtFechaInicio').value;
+            const fechaFin = document.getElementById('txtFechaFin').value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('fechaInicio', fechaInicio);
+            url.searchParams.set('fechaFin', fechaFin);
+            window.location.href = url;
+        });
+
+
+
+
+
+
+
+
+
+
     });
 </script>
 
