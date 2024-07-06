@@ -40,7 +40,7 @@
                             <a class="btn btn-primary btn-sm" href="javascript:history.back()"> {{ __('Back') }}</a>
                         </div>
                     </div>
-                    <div class="card-body" style="max-height: 400px; overflow: auto;" >
+                    <div class="card-body" style="overflow: auto; max-height:250px;"  >
                         <div class="table-responsive">
                             <table class="table">
                                 <thead>
@@ -58,7 +58,7 @@
                                             <td>
                                                 <a href="{{ asset('storage/' . $anexo->archivo) }}" target="_blank">{{ basename($anexo->archivo) }}</a>
                                             </td>
-                                            <td>{{ $anexo->descripcion }}</td>
+                                            <td class="descripcion">{{ $anexo->descripcion }}</td>
                                             <td>{{ \Carbon\Carbon::parse($anexo->created_at)->format('d-M-Y H:i:s') }}</td>
                                         </tr>
                                     @endforeach
@@ -158,7 +158,7 @@
         </div>
     </section>
 
-    <!-- SCRTIP QUE MANEJA EL ENVIO DE FORMULARIO DE COMENTARIOS EN TIEMPO REAL-->
+    <!-- SCRTIP QUE MANEJA EL ENVIO DE FORMULARIO DE COMENTARIOS EN TIEMPO REAL// realmente solo borra el comentario del textarea-->
 <script>
     document.getElementById('enviar-comentario').addEventListener('click', function() {
       var formData = new FormData(document.getElementById('comment-form'));
@@ -184,7 +184,57 @@
   
   </script>
   
-  
+  <!-- DETECTAR SI EL MENSAJE ES UN ENLACE -->
+
+  <script>
+        $(document).ready(function() {
+            function createLink(content) {
+                // Expresión regular para detectar enlaces con http, https y www
+                var urlPattern = /((https?:\/\/|www\.)[^\s]+)/g;
+                return content.replace(urlPattern, function(url) {
+                    // Si el URL empieza con "www", añadimos "http://"
+                    var hyperlink = url.startsWith('www.') ? 'http://' + url : url;
+                    return '<a href="' + hyperlink + '" target="_blank">' + url + '</a>';
+                });
+            }
+
+            function agregarComentario(content, userName, createdAt) {
+                var formattedContent = createLink(content);
+                var comentarioHtml = `
+                    <div class="comment">
+                        <strong style="color:cornflowerblue;">[${userName}] ${createdAt}:</strong> ${formattedContent}
+                    </div>`;
+                document.getElementById('comments').innerHTML += comentarioHtml;
+            }
+
+            function formatLinksInComments() {
+                $('#comments .comment').each(function() {
+                    var $this = $(this);
+                    var formattedContent = createLink($this.html());
+                    $this.html(formattedContent);
+                });
+            }
+
+            function formatLinksInDescriptions() {
+                $('td.descripcion').each(function() {
+                    var $this = $(this);
+                    var formattedContent = createLink($this.html());
+                    $this.html(formattedContent);
+                });
+            }
+
+            // Inicializa el formateo para los comentarios y descripciones existentes
+            formatLinksInComments();
+            formatLinksInDescriptions();
+
+            // Exponer las funciones globalmente
+            window.createLink = createLink;
+            window.agregarComentario = agregarComentario;
+        });
+        
+</script>
+
+
 
 
 @endsection

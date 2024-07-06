@@ -21,20 +21,20 @@
     <!-- POOPER -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
      <!-- Jquery -->    
-     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <!-- js bootrap -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- js bootrap-->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+         
 
-  <!-- DataTables CSS -->
+    <!-- Scripts-->
+    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+
+     <!-- DataTables CSS-->
 <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.min.css">
 
-<!-- DataTables JS -->
+<!-- DataTables JS
 <script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.min.js"></script>
-
-  
-    <!-- Scripts -->
-    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.min.js"></script> -->
 
    
 

@@ -115,7 +115,11 @@
                             <div class="container">
                                 <div class="row">
                                     <div class="col-md-12  p-1 text-end"> <!-- Agregué la clase text-end para alinear a la derecha -->
+                                    @if($revisione->traficos->statusTrafico != 'CERRADO')    
                                         <button type="submit" class="btn btn-primary">{{ __('ACTUALIZAR INFORMACION') }}</button>
+                                    @else
+                                    
+                                    @endif   
                                     </div>  
                                 </div>
                             </div>

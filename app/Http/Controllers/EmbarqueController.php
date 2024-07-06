@@ -129,7 +129,11 @@ class EmbarqueController extends Controller
 
     public function storeFromTrafico(Request $request){
 
+       
+
         $embarque = Embarque::create($request->all());
+        $embarque->Caat = $request->input("CaaT");
+        $embarque->save();
 
         // Obtener los IDs de tráfico de la solicitud
         $trafico_ids = explode(',', $request->trafico_ids);
@@ -279,6 +283,7 @@ class EmbarqueController extends Controller
         foreach ($embarque->traficos as $trafico) {
             $trafico->MxDocs = 'FINALIZADO';
             $trafico->statusTrafico = 'CERRADO';
+            $trafico->fechaCerrado = $data['modulado'];
             $trafico->save();
 
             Historial::create([
@@ -291,6 +296,7 @@ class EmbarqueController extends Controller
         }
 
     } else {
+        //sino quita de la data, del request, modulado
         unset($data['modulado']);
     }
 

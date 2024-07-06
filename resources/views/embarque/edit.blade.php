@@ -37,7 +37,7 @@
         <div class="col-8 mx-auto">
         <div class="card mt-2">
             <div class="card-header">Traficos relacionados para embarque</div>
-            <div class="card-body">
+            <div class="card-body" style="overflow: auto; max-height:300px;" >
                 <table class="table text-center">
                     <thead>
                         <tr>
@@ -47,17 +47,22 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($embarque->traficos as $trafico)
-                        <tr>
-                            <td>{{ $trafico->id }}</td>
-                            <td>{{ $trafico->fechaReg }}</td>
-                            <td><a href="{{ route('traficos.show', $trafico->id) }}" class="btn btn-primary">Ver Anexos</a></td>
-                        </tr>
-                        @endforeach
+                        @php
+                        $traficos = $embarque->traficos->sortBy('id'); // Puedes usar sortByDesc('id') para orden descendente
+                    @endphp
+                    
+                    @foreach($traficos as $trafico)
+                    <tr>
+                        <td>{{ $trafico->id }}</td>
+                        <td>{{ $trafico->fechaReg }}</td>
+                        <td><a href="{{ route('traficos.show', $trafico->id) }}" class="btn btn-primary">Ver Anexos</a></td>
+                    </tr>
+                    @endforeach
                     </tbody>
                 </table>                 
-            <div class="card-footer text-muted"></div>
+           
         </div>
+        <div class="card-footer text-muted"></div>
         </div>
     </div>
 </div>
@@ -124,6 +129,41 @@
                 });
             });
         });
+    </script>
+    
+    <!--formatear links -->
+    <script>
+        $(document).ready(function() {
+        function createLink(content) {
+            // Expresión regular para detectar enlaces con http, https y www
+            var urlPattern = /((https?:\/\/|www\.)[^\s]+)/g;
+            return content.replace(urlPattern, function(url) {
+                // Si el URL empieza con "www", añadimos "http://"
+                var hyperlink = url.startsWith('www.') ? 'http://' + url : url;
+                return '<a href="' + hyperlink + '" target="_blank">' + url + '</a>';
+            });
+        }
+
+        function agregarComentario(content, userName, createdAt) {
+            var formattedContent = createLink(content);
+            var comentarioHtml = `
+                <div class="comment">
+                    <strong style="color:cornflowerblue;">[${userName}] ${createdAt}:</strong> ${formattedContent}
+                </div>`;
+            document.getElementById('comments').innerHTML += comentarioHtml;
+        }
+
+        // Inicializa el formateo para los comentarios existentes
+        $('#comments .comment').each(function() {
+            var $this = $(this);
+            var formattedContent = createLink($this.html());
+            $this.html(formattedContent);
+        });
+
+        // Exponer las funciones globalmente
+        window.createLink = createLink;
+        window.agregarComentario = agregarComentario;
+    });
     </script>
     
 

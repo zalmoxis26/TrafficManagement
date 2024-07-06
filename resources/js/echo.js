@@ -334,9 +334,63 @@ window.Echo.channel('New-trafico')
         } 
     });
 
+//COMENTARIOS NUEVOS A TRAFICOS
 
+    window.Echo.channel('comentarios-trafico')
+    .listen('NuevoComentario', (event) => {
+        if (window.empresasDelUsuario.includes(event.comentario.trafico.empresa_id)) {
+            const traficoUrl = "/traficos/" + event.comentario.trafico_id;
+
+            if (window.location.pathname === traficoUrl) {
+                const formattedDate = new Date(event.comentario.created_at).toLocaleString();
+                const commentsContainer = document.getElementById('comments');
+                const noCommentsMessage = commentsContainer.querySelector('.no-comments-message');
+                if (noCommentsMessage) {
+                    commentsContainer.innerHTML = '';
+                }
+
+                // Aquí llamamos a la función global agregarComentario para formatear y agregar el comentario
+                window.agregarComentario(event.comentario.content, event.user_name, formattedDate);
+            } else {
+                const toastContainer = document.getElementById('toast-container');
+                const toasts = toastContainer.getElementsByClassName('toast');
+                if (toasts.length >= 7) {
+                    toastContainer.removeChild(toasts[0]);
+                }
+
+                const toastEl = document.createElement('div');
+                toastEl.className = 'toast';
+                toastEl.setAttribute('data-autohide', 'true');
+                toastEl.setAttribute('role', 'alert');
+                toastEl.setAttribute('aria-atomic', 'true');
+                toastEl.innerHTML = `
+                    <div class="toast-header bg-dark text-white">
+                        <strong class="mr-auto">Nuevo Comentario para Tráfico #${event.comentario.trafico_id}</strong>
+                        <button type="button" class="btn-close bg-light" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">
+                        ¿Ir a Tráfico?
+                        <a href="/traficos/${event.comentario.trafico_id}" class="btn btn-primary btn-sm">Ir</a>
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="toast">Cancelar</button>
+                    </div>
+                `;
+
+                toastContainer.appendChild(toastEl);
+
+                const toast = new bootstrap.Toast(toastEl, {
+                    autohide: true,
+                    delay: 15000 // 15 segundos
+                });
+                toast.show();
+
+                toastEl.addEventListener('hidden.bs.toast', () => {
+                    toastEl.remove();
+                });
+            }
+        }
+    });
    
-
+ /*   
 window.Echo.channel('comentarios-trafico')
     .listen('NuevoComentario', (event) => {
 
@@ -420,11 +474,69 @@ window.Echo.channel('comentarios-trafico')
         }
     });
 
+*/
 
+//comentarios embarque NVO
+
+window.Echo.channel('comentarios-embarque')
+    .listen('NuevoComentarioEmbarque', (event) => {
+        if (window.empresasDelUsuario.includes(event.embarque.traficos[0].empresa_id)) {
+            const embarqueUrl = "/embarques/" + event.comentario.embarque_id + "/edit";
+
+            if (window.location.pathname === embarqueUrl) {
+                const formattedDate = new Date(event.comentario.created_at).toLocaleString();
+                const commentsContainer = document.getElementById('comments');
+                const noCommentsMessage = commentsContainer.querySelector('.no-comments-message');
+                if (noCommentsMessage) {
+                    commentsContainer.innerHTML = '';
+                }
+
+                // Aquí llamamos a la función global agregarComentario para formatear y agregar el comentario
+                window.agregarComentario(event.comentario.content, event.user_name, formattedDate);
+            } else {
+                const toastContainer = document.getElementById('toast-container');
+                const toasts = toastContainer.getElementsByClassName('toast');
+                if (toasts.length >= 7) {
+                    toastContainer.removeChild(toasts[0]);
+                }
+
+                const toastEl = document.createElement('div');
+                toastEl.className = 'toast';
+                toastEl.setAttribute('data-autohide', 'true');
+                toastEl.setAttribute('role', 'alert');
+                toastEl.setAttribute('aria-atomic', 'true');
+                toastEl.innerHTML = `
+                    <div class="toast-header bg-dark text-white">
+                        <strong class="mr-auto">Nvo Comentario - Embarque#${event.embarque.numEmbarque}</strong>
+                        <button type="button" class="btn-close bg-light" data-bs-dismiss="toast" aria-label="Close">
+                            <span aria-hidden="true" class="bg-light text-white"></span>
+                        </button>
+                    </div>
+                    <div class="toast-body">
+                        ¿Ir al Embarque?
+                        <a href="/embarques/${event.comentario.embarque_id}/edit" class="btn btn-primary btn-sm">Ir</a>
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="toast">Cancelar</button>
+                    </div>
+                `;
+
+                toastContainer.appendChild(toastEl);
+
+                const toast = new bootstrap.Toast(toastEl, {
+                    autohide: true,
+                    delay: 15000 // 15 segundos
+                });
+                toast.show();
+
+                toastEl.addEventListener('hidden.bs.toast', () => {
+                    toastEl.remove();
+                });
+            }
+        }
+    });
 
 
  
-
+/*
 window.Echo.channel('comentarios-embarque')
     .listen('NuevoComentarioEmbarque', (event) => {
 
@@ -508,6 +620,9 @@ window.Echo.channel('comentarios-embarque')
          }
         }
     });
+*/
+
+
 
 //CHANNEL SUSTITUIR FACTURA 
 window.Echo.channel('cambio-factura')

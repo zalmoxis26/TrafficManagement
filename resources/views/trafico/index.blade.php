@@ -173,7 +173,9 @@
                                             </td>
                                           
                                             <td>{{ \Carbon\Carbon::parse($trafico->fechaReg)->format('d-M-Y H:i') }}</td>
-                                            <td class="text-center" >{{ optional($trafico->pedimento)->operacion }}</td>
+                                            <td class="text-center">
+                                                {{ optional($trafico->pedimento)->operacion ?: $trafico->Toperacion }}
+                                            </td>                                            
                                             <td>{{ $trafico->empresa->descripcion }}</td>
                                             @if ($trafico->adjuntoFactura)
                                             <td ><a class="d-block mb-1" href="{{ route('facturas.stream',  ['id' => $trafico->id]) }}?v={{ time() }}" target="_blank">{{ $trafico->factura }} </a>
@@ -571,6 +573,8 @@
 
 <!--SCRIPTS DE DATATABLE -->
 <script>
+
+document.addEventListener('DOMContentLoaded', function () {
     $(document).ready(function() {
         // Inicializa el DataTable con stateSave habilitado
         var tabla = $('#table-traficos').DataTable({
@@ -640,6 +644,7 @@
             tabla.search('').draw();
         });
     });
+});
 </script>
 
 

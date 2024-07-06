@@ -10,6 +10,7 @@ use App\Http\Controllers\RevisioneController;
 use App\Http\Controllers\AnexoController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\PedimentoTxtController;
 
 
 
@@ -20,10 +21,17 @@ Route::get('/', function () {
 Auth::routes();
 
 
+
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::post('/comentario/agregar', [CommentController::class, 'agregarComentario'])->name('comentario.agregar');
 Route::post('/comentarioEmbarque/agregar', [CommentController::class, 'agregarComentarioEmbarque'])->name('comentario.agregarEmbarque');
 Route::get('/Embarques/exportar/embarques', [EmbarqueController::class, 'export'])->name('exportar-embarques');
+
+
+//PEDIMENTOS TXT 
+Route::get('/cargarPedimentoTxt', [PedimentoTxtController::class, 'create']);
+Route::post('/mostrarPedimentoTxt', [PedimentoTxtController::class, 'show']);
+
 
 
 //------------RUTAS GENERALES ---------->
@@ -60,6 +68,10 @@ Route::middleware(['auth', 'role:revisor|admin|documentador|cliente'])->group(fu
     Route::delete('/embarques/{embarque}', [EmbarqueController::class, 'destroy'])->name('embarques.destroy');
 
 
+     //EMPRESAS
+     Route::resource('empresas', EmpresaController::class);
+
+
     //PEDIMENTOS
     Route::get('pedimentos/stream/{id}', [PedimentoController::class, 'streamPedimento'])->name('pedimentos.stream');
     // REPORTE EXCEL
@@ -71,9 +83,6 @@ Route::middleware(['auth', 'role:revisor|admin|documentador|cliente'])->group(fu
 //---------------------------------RUTAS DE DOCUEMENTADORES  ------------ //> 
 
 Route::middleware(['auth', 'role:admin|documentador'])->group(function () {
-
-        //EMPRESAS
-        Route::resource('empresas', EmpresaController::class);
 
         
         //EMBARQUES

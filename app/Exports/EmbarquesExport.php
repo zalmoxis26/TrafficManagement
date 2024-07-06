@@ -77,7 +77,7 @@ class EmbarquesExport implements FromCollection, WithHeadings , WithEvents , Wit
                 'Entregado' => $embarque->entregaDocs,
                 'Desaduanado' => $embarque->modulado,
                 'clavePedimento' => $trafico ? $trafico->clavePed : null,
-                'TipoOperacion' => $trafico && $trafico->pedimento ? "AVISO CONSOLIDAD DE " .  strtoupper($trafico->pedimento->operacion) : null,
+                'TipoOperacion' => $trafico && $trafico->pedimento ? "AVISO CONSOLIDAD DE " .  strtoupper($trafico->pedimento->operacion) : "AVISO CONSOLIDAD DE " .  strtoupper($trafico->Toperacion),
                 'ClaveAduana' => $trafico ? $trafico->aduana : null,
                 'NombreEmpresa' => $trafico && $trafico->empresa ? $trafico->empresa->descripcion : null,
                 'Transporte' => $embarque->Transporte

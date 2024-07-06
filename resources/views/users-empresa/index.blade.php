@@ -77,6 +77,7 @@
 
         <!--SCRIPTS DE DATATABLE -->
 <script>
+     document.addEventListener('DOMContentLoaded', function () {
     $(document).ready(function() {
         // Inicializa el DataTable con stateSave habilitado
         var tabla = $('#table-UserEmpresas').DataTable({
@@ -98,6 +99,7 @@
             "stateSave": true, // Habilitar stateSave
         });
     });
+});
 </script>
 
 @endsection

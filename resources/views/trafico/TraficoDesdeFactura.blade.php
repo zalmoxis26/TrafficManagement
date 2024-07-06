@@ -70,11 +70,24 @@
                     </div> 
 
                     <div class="row mb-2">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="mb-3">
                                 <label for="facturaNumero" class="form-label">Número de Factura</label>
                                 <input type="text" class="form-control" id="facturaNumero" name="factura" placeholder="Ingrese el número de factura" required>
                             </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group mb-2 mb20">
+                                <label for="Toperacion" class="form-label">{{ __('Tipo Operación') }}</label>
+                                <select name="Toperacion" id="Toperacion" class="form-control" required>
+                                    <option value="Importacion" >
+                                        {{ __('Importación') }}
+                                    </option>
+                                    <option value="Exportacion">
+                                        {{ __('Exportación') }}
+                                    </option>
+                                </select>
+                            </div>  
                         </div>
 
                         <div class="col-md-6">

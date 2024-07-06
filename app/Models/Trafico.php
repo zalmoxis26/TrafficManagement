@@ -39,7 +39,7 @@ class Trafico extends Model
      *
      * @var array<int, string>
      */
-    protected $fillable = ['statusTrafico','patente','aduana','revision_id', 'pedimento_id','adjuntoFactura','cliente_id', 'empresa_id','embarque', 'folioTransporte', 'fechaReg', 'Toperacion', 'factura', 'clavePed', 'MxDocs', 'Revision', 'Transporte', 'Clasificacion', 'Odt'];
+    protected $fillable = ['fechaCerrado','statusTrafico','patente','aduana','revision_id', 'pedimento_id','adjuntoFactura','cliente_id', 'empresa_id','embarque', 'folioTransporte', 'fechaReg', 'Toperacion', 'factura', 'clavePed', 'MxDocs', 'Revision', 'Transporte', 'Clasificacion', 'Odt'];
 
 
     public function empresa()

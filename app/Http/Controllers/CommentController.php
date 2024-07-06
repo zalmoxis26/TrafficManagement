@@ -40,8 +40,8 @@ class CommentController extends Controller
         // junto con el nombre del usuario asociado al comentario
         return response()->json([
             'success' => true,
-            'comentario' => $comentario,
-            'user_name' => $userName // Enviamos el nombre del usuario en la respuesta JSON
+           // 'comentario' => $comentario,
+           // 'user_name' => $userName // Enviamos el nombre del usuario en la respuesta JSON
         ]);
     }
 
@@ -78,9 +78,9 @@ class CommentController extends Controller
         // junto con el nombre del usuario asociado al comentario
         return response()->json([
             'success' => true,
-            'comentario' => $comentario,
-            'user_name' => $userName,
-            'embarque' => $embarque,
+           // 'comentario' => $comentario,
+           // 'user_name' => $userName,
+           // 'embarque' => $embarque,
     
         ]);
     }

@@ -25,7 +25,7 @@ class EmpresaRequest extends FormRequest
 			'clave' => 'required|string',
 			'descripcion' => 'required|string',
             'empresaMatriz' => 'required|string',
-			'rfc' => 'required|string',
+            'rfc' => 'required|string|unique:empresas,rfc',
         ];
     }
 }

@@ -22,12 +22,13 @@ class TraficoExport implements FromCollection, WithHeadings, WithEvents ,WithChu
     protected $fechaInicio;
     protected $fechaFin;
 
-    public function __construct($exportType, $status,$fechaFin,$fechaInicio)
+    public function __construct($exportType, $status,$fechaInicio,$fechaFin)
     {
         $this->exportType = $exportType;
         $this->status = $status;
         $this->fechaInicio = $fechaInicio ? Carbon::parse($fechaInicio)->startOfDay() : Carbon::now()->subMonth()->startOfMonth(); // sino mes anterior del dia actual
         $this->fechaFin = $fechaFin ? Carbon::parse($fechaFin)->endOfDay() : Carbon::now()->endOfDay(); // sino hoy al final del d
+        
     }
 
 
@@ -73,6 +74,7 @@ class TraficoExport implements FromCollection, WithHeadings, WithEvents ,WithChu
         // Map the results to include related fields
             $traficosCollection = $traficos->map(function($trafico) {
                 return [
+                    'id' => $trafico->id,
                     'cliente' => $trafico->empresa->descripcion,
                     'factura' => $trafico->factura,
                     'pedimento' => $trafico->pedimento ? $trafico->pedimento->numPedimento : '',
@@ -83,6 +85,7 @@ class TraficoExport implements FromCollection, WithHeadings, WithEvents ,WithChu
                     'fin_revision' => optional($trafico->revision)->finRevision,
                     'factura_correcta' =>  optional($trafico->revision)->facturaCorrecta,
                     'fechaDodaPita' => $trafico->pedimento ? $trafico->pedimento->fechaDodaPita : '',
+                    'estatus' => $trafico->statusTrafico,
                 ];
             });
 
@@ -94,6 +97,7 @@ class TraficoExport implements FromCollection, WithHeadings, WithEvents ,WithChu
     public function headings(): array
     {
         return [
+            '#TAFICO',
             'CLIENTE',
             'FACTURA',
             'PEDIMENTO',
@@ -104,6 +108,7 @@ class TraficoExport implements FromCollection, WithHeadings, WithEvents ,WithChu
             'FIN REVISION',
             'FACTURA CORRECTA',
             'DODA/ PITA EN TRAFICO',
+            'STATUS',
         ];
     }
 
@@ -114,17 +119,17 @@ class TraficoExport implements FromCollection, WithHeadings, WithEvents ,WithChu
                 $sheet = $event->sheet->getDelegate();
 
                 // Auto tamaño para todas las columnas
-                foreach (range('A', 'J') as $column) {
+                foreach (range('A', 'L') as $column) {
                     $sheet->getColumnDimension($column)->setAutoSize(true);
                 }
 
                 // Centrar el contenido de las columnas
-                $sheet->getStyle('A1:J' . $sheet->getHighestRow())
+                $sheet->getStyle('A1:L' . $sheet->getHighestRow())
                       ->getAlignment()
                       ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
                 // Poner en negrita el encabezado
-                $sheet->getStyle('A1:J1')->getFont()->setBold(true);
+                $sheet->getStyle('A1:L1')->getFont()->setBold(true);
             },
         ];
     }

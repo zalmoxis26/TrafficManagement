@@ -74,11 +74,11 @@
                                <div class="col-md-3">
                                     <div class="form-group mb-2 mb20">
                                         <label for="operacion" class="form-label">{{ __('Tipo Operación') }}</label>
-                                        <select name="operacion" id="operacion" class="form-control" required>
-                                            <option value="Importacion" {{ old('operacion', $pedimento?->operacion) == 'Importacion' ? 'selected' : '' }}>
+                                        <select name="operacion" id="operacion" class="form-control" required disabled>
+                                            <option value="Importacion" {{ old('operacion', $trafico?->Toperacion) == 'Importacion' ? 'selected' : '' }}>
                                                 {{ __('Importación') }}
                                             </option>
-                                            <option value="Exportacion" {{ old('operacion', $pedimento?->operacion) == 'Exportacion' ? 'selected' : '' }}>
+                                            <option value="Exportacion" {{ old('operacion', $trafico?->Toperacion) == 'Exportacion' ? 'selected' : '' }}>
                                                 {{ __('Exportación') }}
                                             </option>
                                         </select>

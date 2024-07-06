@@ -190,6 +190,7 @@ class TraficoController extends Controller
             'adjuntoFactura' => 'required|file|mimes:pdf,jpg,png|max:3000',
             'aduana' => 'required',
             'patente' => 'required' ,
+            'Toperacion' => 'required',
              ]);
 
 
@@ -269,7 +270,9 @@ class TraficoController extends Controller
         $fechaInicio = $request->input('fechaInicio');
         $fechaFin = $request->input('fechaFin');
 
-        $name = "Reporte de Todos los Traficos.xlsx";
+       
+
+        $name = "Reporte de Todos los Traficos del " . $fechaInicio .".xlsx";      
         if($exportType === "importacion"){
             $name = "REPORTE DE IMPORTACION.xlsx";
         }elseif($exportType === "exportacion"){

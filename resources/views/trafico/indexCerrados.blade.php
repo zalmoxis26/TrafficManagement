@@ -302,13 +302,24 @@
             <div class="modal-body bg-secondary-subtle">
                 <form action="{{ route('trafico.export') }}" method="GET">
                     <!-- Select for IMPORT, EXPORTS, TODOS -->
-                    <div class="mt-1">
+                    <div class="mt-1 col-10 mx-auto">
                         <label for="exportType" class="form-label"><strong> Exportacion Excel:</strong> </label>
                         <select id="exportType" name="exportType" class="form-select" aria-label="Tipo de Exportación">
                             <option value="TODOS" selected>Todos</option>
                             <option value="importacion">Import</option>
                             <option value="exportacion">Exports</option>
                         </select>
+                    </div>
+
+                    <div class="row justify-content-center mt-4 mb-2"> 
+                        <div class="col-5">
+                            <label for="fechaInicio" class="form-label"><strong>Fecha de Inicio:</strong></label>
+                            <input type="date" id="fechaInicio" name="fechaInicio" class="form-control">
+                        </div>
+                        <div class="col-5">
+                            <label for="fechaFin" class="form-label"><strong>Fecha Fin:</strong></label>
+                            <input type="date" id="fechaFin" name="fechaFin" class="form-control">
+                        </div>
                     </div>
 
                     <!-- Radio buttons for ABIERTO, CERRADO, TODOS -->
@@ -328,7 +339,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer  bg-secondary-subtle">
+                    <div class="modal-footer  bg-secondary-subtle">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Exportar</button>
                 </div>
