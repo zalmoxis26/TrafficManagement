@@ -83,8 +83,8 @@
                                         <label for="" class="form-label">Status Revision</label>
                                         <select class="form-select form-select-md" name="Revision" id="statusRevision">
                                             <option value="EN PROCESO" @selected($revisionStatus == 'EN PROCESO')>EN PROCESO</option>
-                                            <option value="CORRECCIONES" @selected($revisionStatus == 'CORRECCIONES')>CORRECCIONES</option>
-                                            <option value="FINALIZADO" @selected($revisionStatus == 'FINALIZADO')>FINALIZADO</option>
+                                            <option value="EN ESPERA DE CORRECCIONES" @selected($revisionStatus == 'EN ESPERA DE CORRECCIONES')>EN ESPERA DE CORRECCIONES</option>
+                                            <option value="LIBERADA" @selected($revisionStatus == 'LIBERADA')>LIBERADA</option>
                                         </select>
                                         <div id="updateMessage" style="margin-top: 10px; color: green;"></div>
                                     </div>                                      

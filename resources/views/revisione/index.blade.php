@@ -35,13 +35,14 @@
                                 <thead class="thead table-dark">
                                     <tr>
                                     <th>#Trafico</th>
+                                    <th>#Factura</th>
                                     <th class="text-center" style="width:15%">Empresa</th>
 									<th >Nombre Revisor</th>
 									<th >Inicio Revision</th>
 									<th >Fin Revision</th>
 									<th >Tiempo Revision</th>
                                     <th >Ubicacion</th>
-                                    <th >Status</th>
+                                    <th style="width:20px;" class="text-center" >Status</th>
 
                                         <th></th>
                                     </tr>
@@ -49,7 +50,13 @@
                                 <tbody>
                                     @foreach ($revisiones as $revisione)
                                         <tr>
-                                            <td class="text-center">{{ optional($revisione->traficos)->id }}</td>   
+                                            <td class="text-center">{{ optional($revisione->traficos)->id }}</td>
+                                            <td> 
+                                            @if (optional($revisione->traficos)->adjuntoFactura)
+                                                    <a class="d-block mb-1" href="{{ route('facturas.stream',  ['id' =>optional($revisione->traficos)->id]) }}?v={{ time() }}" target="_blank">{{ optional($revisione->traficos)->factura }} </a>
+                                            @else
+                                            @endif
+                                        </td>           
                                             <td>{{ optional($revisione->traficos)->empresa->descripcion }}</td>                              
                                             <td class="text-center" >{{ $revisione->nombreRevisor }}</td>
                                             <td>
@@ -70,54 +77,60 @@
                                             <td >{{ $revisione->tiempoRevision }}</td>
                                             <td>{{$revisione->ubicacionRevision}}</td>
 
-  <!--BTN STATUS REVISION -->           <td>
-                                            @php
-                                                $trafico = $revisione->traficos;
-                                                $revision = $trafico ? $trafico->Revision : null;
-                                                $buttonClass = '';
-                                                $badgeClass = '';
-                                        
-                                                switch ($revision) {
-                                                    case 'PENDIENTE':
-                                                        $buttonClass = 'btn btn-danger rounded-5 p-0';
-                                                        $badgeClass = 'badge bg-danger';
-                                                        break;
-                                                    case 'EN PROCESO':
-                                                        $buttonClass = 'btn btn-primary rounded-5 p-0';
-                                                        $badgeClass = 'badge bg-primary';
-                                                        break;
-                                                    case 'CORRECCIONES':
-                                                        $buttonClass = 'btn btn-warning rounded-5 p-0';
-                                                        $badgeClass = 'badge bg-warning';
-                                                        break;
-                                                    case 'FINALIZADO':
-                                                        $buttonClass = 'btn btn-success rounded-5 p-0';
-                                                        $badgeClass = 'badge bg-success';
-                                                        break;
-                                                    default:
-                                                        $buttonClass = 'btn btn-secondary rounded-5 p-0';
-                                                        $badgeClass = 'badge bg-secondary';
-                                                        break;
-                                                }
-                                            @endphp
-                                        
-                                                <button class="{{ $buttonClass }}">
-                                                    <span class="{{ $badgeClass }}">{{ $revision }}</span>
-                                                </button>   
-                                        </td>
+  <!--BTN STATUS REVISION -->           @php
+    $trafico = $revisione->traficos;
+    $revision = $trafico ? $trafico->Revision : null;
+    $buttonClass = '';
+    $badgeClass = '';
+
+    switch ($revision) {
+        case 'PENDIENTE':
+            $buttonClass = 'btn btn-danger rounded-5 p-0';
+            $badgeClass = 'badge bg-danger';
+            break;
+        case 'EN PROCESO':
+            $buttonClass = 'btn btn-primary rounded-5 p-0';
+            $badgeClass = 'badge bg-primary';
+            break;
+        case 'EN ESPERA DE CORRECCIONES':
+            $buttonClass = 'btn btn-warning rounded-5 p-0';
+            $badgeClass = 'badge bg-warning';
+            $badgeContent = 'CORRECIONES'; // Añade salto de línea
+            break;
+        case 'LIBERADA':
+            $buttonClass = 'btn btn-success rounded-5 p-0';
+            $badgeClass = 'badge bg-success';
+            break;
+        default:
+            $buttonClass = 'btn btn-secondary rounded-5 p-0';
+            $badgeClass = 'badge bg-secondary';
+            break;
+    }
+@endphp
+
+<td>
+    <button class="{{ $buttonClass }}">
+        @if($revision === 'EN ESPERA DE CORRECCIONES')
+            <span title="EN ESPERA DE CORRECIONES" class="{{ $badgeClass }}" >{!! $badgeContent !!}</span> 
+        @else
+            <span class="{{ $badgeClass }}">{{ $revision }}</span>
+        @endif
+    </button>
+</td>
+
                                         
 
                                         
                                         
 
                                             <td>
-                                                <form action="{{ route('revisiones.destroy', $revisione->id) }}" method="POST">
-                                            <!--    <a class="btn btn-sm btn-primary " href="{{ route('revisiones.show', $revisione->id) }}"><i class="fa fa-fw fa-eye"></i> {{ __('Show') }}</a> -->
+                                              <!--  <form action="{{ route('revisiones.destroy', $revisione->id) }}" method="POST">
+                                                <a class="btn btn-sm btn-primary " href="{{ route('revisiones.show', $revisione->id) }}"><i class="fa fa-fw fa-eye"></i> {{ __('Show') }}</a> -->
                                                     <a class="btn btn-sm btn-success" href="{{ route('revisiones.edit', $revisione->id) }}"><i class="bi bi-pen"></i>Editar</a>
-                                                    @csrf
-                                                    @method('DELETE')
+                                                 <!--   @csrf
+                                                 @method('DELETE')
                                                     <button type="submit" class="btn btn-danger btn-sm" onclick="event.preventDefault(); confirm('Are you sure to delete?') ? this.closest('form').submit() : false;"><i class="bi bi-trash"></i> {{ __('Borrar') }}</button>
-                                                </form>
+                                                </form> -->
                                             </td>
                                            
 

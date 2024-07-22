@@ -228,7 +228,7 @@ class ProcessFtpFiles implements ShouldQueue
                     $validator = Validator::make([
                         'factura' => $data[16],
                         'empresa_id' => $empresa->id,
-                        'fechaReg' => Carbon::now(), // Esto debería ser la fecha real del archivo o la fecha de recepción
+                        'fechaReg' =>  Carbon::now('America/Los_Angeles'), // Esto debería ser la fecha real del archivo o la fecha de recepción
                         'adjuntoFactura' => '/storage/invoices/' . basename($filePath),
                         'aduana' => '400-TIJ', // Cambiar según el contexto real
                         'patente' => '3875', // Cambiar según el contexto real

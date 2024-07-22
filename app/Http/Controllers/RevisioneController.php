@@ -111,7 +111,7 @@ class RevisioneController extends Controller
         } 
 
     
-        if ($request->input('Revision') === "FINALIZADO" &&  is_null($revisione->finRevision)) {
+        if ($request->input('Revision') === "LIBERADA" &&  is_null($revisione->finRevision)) {
             // Establecer la fecha de fin de la revisión
             $revisione->finRevision = Carbon::now('America/Los_Angeles')->format('Y-m-d\TH:i');
     
@@ -177,7 +177,7 @@ class RevisioneController extends Controller
             $revisione->adjuntoRevision = 'Revisiones/RevisionTrafico_' . $revisione->traficos()->first()->id . '/' . $fileName;
             $revisione->save();
 
-
+   
             Historial::create([
                 'trafico_id' => $trafico->id,
                 'nombre' => 'Recepcion Nuevo Archivo Revision',
@@ -196,6 +196,7 @@ class RevisioneController extends Controller
     
       
         if ($trafico) {
+
             $trafico->Revision = $request->input('Revision');
             $trafico->save();
 
@@ -204,12 +205,31 @@ class RevisioneController extends Controller
 
         }
 
-        Historial::create([
-            'trafico_id' => $trafico->id,
-            'nombre' => 'Actualizacion Revision',
-            'descripcion' => 'Se ha actualizado la informacion de Revision.',
-            'hora' => Carbon::now('America/Los_Angeles'),
-        ]);
+        
+        if($request->input('Revision') === "LIBERADA" )  {
+            Historial::create([
+                'trafico_id' => $trafico->id,
+                'nombre' => 'Actualizacion Status Revision (Liberada)',
+                'descripcion' => 'La Revision se encuentra Liberada.',
+                'hora' => Carbon::now('America/Los_Angeles'),
+            ]);
+        } else if($request->input('Revision') === "EN ESPERA DE CORRECCIONES") {
+            Historial::create([
+                'trafico_id' => $trafico->id,
+                'nombre' => 'Actualizacion Status Revision (Solicitud de Correciones)',
+                'descripcion' => 'La Revision se encuentra en Espera de Correciones.',
+                'hora' => Carbon::now('America/Los_Angeles'),
+            ]);
+        }else {
+            Historial::create([
+                'trafico_id' => $trafico->id,
+                'nombre' => 'Actualizacion de Revision',
+                'descripcion' => 'La Revision ha sido Actualizada.',
+                'hora' => Carbon::now('America/Los_Angeles'),
+            ]);
+        }
+
+        
     
         // Redirigir a la ruta 'revisiones.index' con un mensaje de éxito
         return Redirect::route('revisiones.index')

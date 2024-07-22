@@ -346,7 +346,7 @@ class TraficoController extends Controller
      // Registrar el evento en el historial
      Historial::create([
         'trafico_id' => $trafico->id,
-        'nombre' => 'Sustitucion de Factura(Anterior)',
+        'nombre' => 'Sustitucion de Factura(Anterior-No Valida)',
         'descripcion' => 'Factura No valida, Sustituida por cambio o errores en la misma.',
         'hora' => Carbon::now('America/Los_Angeles'),
         'adjunto' => $rutaArchivo,
@@ -362,11 +362,12 @@ class TraficoController extends Controller
             // Actualizar el tráfico con la nueva información del archivo
             $trafico->adjuntoFactura = '/Facturas/Factura'  .'Trafico_' . $trafico->id . '/' . $filename;
 
-            if($trafico->Revision != 'N/A' &&  $trafico->revision->correccionFactura === 'NO' ){
+
+            if($trafico->Revision != 'N/A'  &&  $trafico->revision->correccionFactura === 'NO' ){
                 // campo correcion de revision no confundir
                 $trafico->revision->correccionFactura = "SI";
                 //campo revision de trafico
-                $trafico->Revision = "CORRECCIONES";       
+                $trafico->Revision = "EN ESPERA DE CORRECCIONES";       
                 $trafico->revision->save();
             }
            
