@@ -66,9 +66,9 @@ class EmpresaController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(EmpresaRequest $request, Empresa $empresa): RedirectResponse
+    public function update(Request $request, Empresa $empresa)
     {
-        $empresa->update($request->validated());
+        $empresa->update($request->all());
 
         return Redirect::route('empresas.index')
             ->with('success', 'Empresa updated successfully');

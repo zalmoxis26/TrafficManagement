@@ -11,6 +11,8 @@ use App\Http\Controllers\AnexoController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PedimentoTxtController;
+use App\Http\Controllers\DocumentFtpController;
+
 
 
 
@@ -28,9 +30,30 @@ Route::post('/comentarioEmbarque/agregar', [CommentController::class, 'agregarCo
 Route::get('/Embarques/exportar/embarques', [EmbarqueController::class, 'export'])->name('exportar-embarques');
 
 
-//PEDIMENTOS TXT 
-Route::get('/cargarPedimentoTxt', [PedimentoTxtController::class, 'create']);
-Route::post('/mostrarPedimentoTxt', [PedimentoTxtController::class, 'show']);
+//DOCUMENTOS FTP
+Route::get('/documents/{directory?}', [DocumentFtpController::class, 'index'])->where('directory', '.*')->name('documents.index');
+Route::get('/descargar/documents/{filename}', [DocumentFtpController::class, 'download'])->where('filename', '.*')->name('documents.download');
+
+Route::get('/dispatch-ftp-job', [FtpController::class, 'dispatchJob']);//despachas ftp job
+Route::post('/upload-to-ftp', [DocumentFtpController::class, 'uploadToFTP']);//subir al ftp
+Route::get('/upload', function () {
+    return view('pedimentoTxt.uploadFTP');
+});
+
+//PEDIMENTOS TXT (VIZUALIZAR 1 A LA VEZ, ANTIGUO)
+
+Route::get('Antiguo/cargarPedimentoTxt', [PedimentoTxtController::class, 'cargarUnTxt']);
+Route::post('Antiguo/mostrarPedimentoTxt', [PedimentoTxtController::class, 'visualizarUnTxt']);
+
+//PEDIMENTO TXT CARGAR STORE E INDEX 
+
+Route::get('/pedimentosTxt', [PedimentoTxtController::class, 'index'])->name('pedimentoTxt.index');
+Route::get('cargarPedimentoTxt', [PedimentoTxtController::class, 'create']);
+Route::post('/guardarPedimentoTxt', [PedimentoTxtController::class, 'store']);
+Route::get('/pedimentosTxt/opcionesExport', [PedimentoTxtController::class, 'OpcionesExportPedimentosTxt'])->name('opciones.exportPedimentoTxt');
+
+
+
 
 
 
