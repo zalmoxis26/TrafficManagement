@@ -270,32 +270,44 @@ class ProcessFtpFiles implements ShouldQueue
                     $trafico->MxDocs = "PENDIENTE";
                     $trafico->statusTrafico = "ABIERTO";
     
-                    // Mover el archivo TXT y PDF a la nueva ubicación
+                  // Mover el archivo TXT y PDF a la nueva ubicación
                     $nombreOriginalTxt = basename($filePath);
-                    $nombreOriginalPdf = str_ireplace('.txt', '.pdf', $nombreOriginalTxt); // str_ireplace es insensible a mayúsculas y minúsculas
-    
+                    $nombreOriginalPdf = strtolower(str_ireplace('.txt', '.pdf', $nombreOriginalTxt)); // Convertir a minúsculas
+
                     // Mover el archivo TXT
                     $rutaArchivoTxt = Storage::disk('local')->move(
                         'invoices/' . $nombreOriginalTxt,
                         'public/Facturas/FacturaTrafico_' . $trafico->id . '/' . $nombreOriginalTxt
                     );
-    
-                  //  Log::info('Archivo TXT movido', ['filename' => $nombreOriginalTxt, 'new_location' => $rutaArchivoTxt]);
-    
-                    // Mover el archivo PDF
+
+                    // Log::info('Archivo TXT movido', ['filename' => $nombreOriginalTxt, 'new_location' => $rutaArchivoTxt]);
+
+                    // Verificar si el archivo PDF existe con la extensión en minúsculas
                     if (Storage::disk('local')->exists('invoices/' . $nombreOriginalPdf)) {
                         $rutaArchivoPdf = Storage::disk('local')->move(
                             'invoices/' . $nombreOriginalPdf,
                             'public/Facturas/FacturaTrafico_' . $trafico->id . '/' . $nombreOriginalPdf
                         );
-    
-                      //  Log::info('Archivo PDF movido', ['filename' => $nombreOriginalPdf, 'new_location' => $rutaArchivoPdf]);
+
+                        // Log::info('Archivo PDF movido', ['filename' => $nombreOriginalPdf, 'new_location' => $rutaArchivoPdf]);
                     } else {
-                        $rutaArchivoPdf = null;
-                        Log::warning('Archivo PDF no encontrado', ['filename' => $nombreOriginalPdf]);
+                        // Si no existe en minúsculas, buscar la extensión en mayúsculas
+                        $nombreOriginalPdf = strtoupper($nombreOriginalPdf);
+                        if (Storage::disk('local')->exists('invoices/' . $nombreOriginalPdf)) {
+                            $rutaArchivoPdf = Storage::disk('local')->move(
+                                'invoices/' . $nombreOriginalPdf,
+                                'public/Facturas/FacturaTrafico_' . $trafico->id . '/' . $nombreOriginalPdf
+                            );
+
+                            // Log::info('Archivo PDF movido', ['filename' => $nombreOriginalPdf, 'new_location' => $rutaArchivoPdf]);
+                        } else {
+                            $rutaArchivoPdf = null;
+                            Log::warning('Archivo PDF no encontrado', ['filename' => $nombreOriginalPdf]);
+                        }
                     }
-    
-                    $trafico->adjuntoFactura = '/Facturas/FacturaTrafico_' . $trafico->id . '/' . $nombreOriginalPdf;
+
+                    $trafico->adjuntoFactura = '/Facturas/FacturaTrafico_' . $trafico->id . '/' . basename($nombreOriginalPdf);
+
     
     //REVISION CREAR EN TRUE
 
