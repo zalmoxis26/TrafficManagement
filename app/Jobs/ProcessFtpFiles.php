@@ -293,6 +293,7 @@ class ProcessFtpFiles implements ShouldQueue
                         );
 
                         // Log::info('Archivo PDF movido', ['filename' => $nombreOriginalPdfUpper, 'new_location' => $rutaArchivoPdf]);
+                        $nombreOriginalPdf = $nombreOriginalPdfUpper; // Actualizar la variable con la extensión correcta
                     } else {
                         // Si no existe en mayúsculas, buscar la extensión en minúsculas
                         if (Storage::disk('local')->exists('invoices/' . $nombreOriginalPdfLower)) {
@@ -302,6 +303,7 @@ class ProcessFtpFiles implements ShouldQueue
                             );
 
                             // Log::info('Archivo PDF movido', ['filename' => $nombreOriginalPdfLower, 'new_location' => $rutaArchivoPdf]);
+                            $nombreOriginalPdf = $nombreOriginalPdfLower; // Actualizar la variable con la extensión correcta
                         } else {
                             $rutaArchivoPdf = null;
                             Log::warning('Archivo PDF no encontrado', ['filename' => $nombreOriginalPdf]);
