@@ -43,11 +43,12 @@
                         <div class="table-responsive">
                             <table class="table table-striped table-hover text-center p-2" id="table-empresas">
                                 <thead class="thead table-dark">
-                                    <tr>
-                                        <th>No</th>            
-                                        <th  >Clave</th>
-                                        <th class="text-center">Nombre de la Empresa</th>
-                                        <th class="text-center">Empresa Matriz</th>
+                                    <tr>        
+                                        <th>Clave Prov</th>
+                                        <th class="text-center">Proveedor</th>
+                                        <th>Clave Cli</th>
+                                        <th class="text-center">Nombre Cliente</th>
+                                        <th class="text-center" title="Prefijo de la Factura">Prefijo</th>    
                                         <th class="text-center">RFC</th>
                                         <th>Acciones</th>
                                     </tr>
@@ -55,13 +56,12 @@
                                 <tbody>
                                     @foreach ($empresas as $empresa)
                                         <tr>
-                                            <td>{{ ++$i }}</td>
-                                            
-										<td >{{ $empresa->clave }}</td>
-										<td class="text-center">{{ $empresa->descripcion }}</td>
-                                        <td class="text-center">{{ $empresa->empresaMatriz }}</td>
-										<td >{{ $empresa->rfc }}</td>
-
+                                            <td>{{$empresa->claveProveedor}} </td> 
+                                            <td class="text-center">{{ $empresa->descripcion }}</td>    
+                                            <td >{{ $empresa->clave }}</td>
+                                            <td class="text-center">{{ $empresa->empresaMatriz }}</td>   
+                                            <td class="text-center">{{ $empresa->prefijoFactura }}</td>
+                                            <td >{{ $empresa->rfc }}</td>
                                             <td>
                                                 <form action="{{ route('empresas.destroy', $empresa->id) }}" method="POST">
                                                     <a class="btn btn-sm btn-success" href="{{ route('empresas.edit', $empresa->id) }}"><i class="bi bi-pen"></i> {{ __('Edit') }}</a>

@@ -182,12 +182,32 @@ class ProcessFtpFiles implements ShouldQueue
     
                 if ($data[0] == '501') {
                     
-                    // Buscar el ID de la empresa usando la clave
-                    $empresa = Empresa::where('clave', $data[4])->first();
+//BUSCAR LA EMPRESA CON CLAVE Y PREFIJO FACTURA
+
+                    $clave = $data[4];
+                    $numeroFactura = $data[16];
+
+                    // Buscar todas las empresas que coinciden con la clave
+                    $empresas = Empresa::where('clave', $clave)->get();
+
+                    $empresaEncontrada = null;
+
+                    // Iterar sobre las empresas encontradas para verificar el prefijo de la factura
+                    foreach ($empresas as $empresa) {
+                        $prefijoFactura = $empresa->prefijoFactura;
+                        
+                         // Verificar que el prefijo no esté vacío y que esté contenido en el número de factura
+                        if (!empty($prefijoFactura) && strpos($numeroFactura, $prefijoFactura) !== false) {
+                            // El prefijo está contenido en el número de factura
+                            $empresaEncontrada = $empresa;
+                            break;
+                        }
+                    }
+
 
     //SINO EXISTE LA EMPRESA
 
-                    if (!$empresa) {
+                    if (!$empresaEncontrada) {
                         $errorMessage = '*1003|Empresa no encontrada para la clave: ' . $data[4] . PHP_EOL;
                     
                         // Verificar si ya existen mensajes 1003 en el archivo
@@ -222,16 +242,18 @@ class ProcessFtpFiles implements ShouldQueue
                         'adjuntoFactura' => 'required|string',
                         'aduana' => 'required|string',
                         'patente' => 'required|string',
-                        'Toperacion' => 'required|string',
+                        'clavePed' => 'required|',
+                        'Toperacion' => 'required|string', 
                     ];
     
                     $validator = Validator::make([
                         'factura' => $data[16],
-                        'empresa_id' => $empresa->id,
+                        'empresa_id' => $empresaEncontrada->id,
                         'fechaReg' =>  Carbon::now('America/Los_Angeles'), // Esto debería ser la fecha real del archivo o la fecha de recepción
                         'adjuntoFactura' => '/storage/invoices/' . basename($filePath),
                         'aduana' => '400-TIJ', // Cambiar según el contexto real
                         'patente' => '3875', // Cambiar según el contexto real
+                        'clavePed' => $data[2],
                         'Toperacion' => $data[1] == '1' ? 'Importacion' : 'Exportacion', // Determinar la operación basada en el valor
                     ], $validatedData);
     
@@ -312,27 +334,33 @@ class ProcessFtpFiles implements ShouldQueue
 
                     $trafico->adjuntoFactura = '/Facturas/FacturaTrafico_' . $trafico->id . '/' . basename($nombreOriginalPdf);
 
+                    
+    //REVISION CREAR EN TRUE y evaluar si lleva revision
 
-    
-    //REVISION CREAR EN TRUE
+                $excepcionesOperaciones = ['Exportacion'];
+                $excepcionesClavePed = ['A3', 'V1', 'F3'];
 
-                    if (true) { // Supongamos que siempre lleva revisión
-                        $revision = new Revisione();
-                        $revision->nombreRevisor = 'sinAsignar';
-                        $revision->facturaCorrecta = $trafico->fechaReg;
-                        $revision->status = 'PENDIENTE';
-                        $revision->ubicacionRevision = 'DefaultLocation'; // Cambiar según el contexto real
-                        $revision->correccionFactura = 'NO';
-                        $revision->save();
+                $llevaRevision = !in_array($trafico->Toperacion, $excepcionesOperaciones) && !in_array($trafico->clavePed, $excepcionesClavePed);
+
+                if ($llevaRevision) {
+                    $revision = new Revisione();
+                    $revision->nombreRevisor = 'sinAsignar';
+                    $revision->facturaCorrecta = $trafico->fechaReg;
+                    $revision->status = 'PENDIENTE';
+                    $revision->ubicacionRevision = 'DefaultLocation'; // Cambiar según el contexto real
+                    $revision->correccionFactura = 'NO';
+                    $revision->save();
+
+                    $trafico->revision()->associate($revision);
+                    $trafico->Revision = 'PENDIENTE';
+                    $trafico->revision_id = $revision->id;
+                } else {
+                    $trafico->Revision = 'N/A';
+                }
+
+                $trafico->save();
+            
     
-                        $trafico->revision()->associate($revision);
-                        $trafico->Revision = 'PENDIENTE';
-                        $trafico->revision_id = $revision->id;
-                    } else {
-                        $trafico->Revision = 'N/A';
-                    }
-    
-                    $trafico->save();
     
     // Emitir el evento y registrar en el historial
 

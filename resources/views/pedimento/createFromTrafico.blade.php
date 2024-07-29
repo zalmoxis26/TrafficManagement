@@ -64,13 +64,13 @@
                                </div>
 
                                <div class="col-md-3">
-                                   <div class="form-group mb-2 mb20">
-                                       <label for="clave_ped" class="form-label">{{ __('Clave Pedimento') }}</label>
-                                       <input type="text" name="clavePed" class="form-control @error('clavePed') is-invalid @enderror" value="{{ old('clavePed', $pedimento?->clavePed) }}" id="clave_ped" placeholder="Claveped">
-                                       {!! $errors->first('clavePed', '<div class="invalid-feedback" role="alert"><strong>:message</strong></div>') !!}
-                                   </div>
-                               </div>
-                               
+                                    <div class="form-group mb-2 mb20">
+                                        <label for="clave_ped" class="form-label">{{ __('Clave Pedimento') }}</label>
+                                        <input type="text" name="clavePed" class="form-control @error('clavePed') is-invalid @enderror" value="{{ old('clavePed', $pedimento->clavePed ?? $trafico->clavePed) }}" id="clave_ped" placeholder="Clave Pedimento">
+                                        {!! $errors->first('clavePed', '<div class="invalid-feedback" role="alert"><strong>:message</strong></div>') !!}
+                                    </div>
+                                </div>
+                              
                                <div class="col-md-3">
                                     <div class="form-group mb-2 mb20">
                                         <label for="operacion" class="form-label">{{ __('Tipo Operación') }}</label>
@@ -148,8 +148,9 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('clave_ped').addEventListener('input', function() {
-            var clave_ped = this.value.toUpperCase();
+        // Función para verificar el valor del campo y mostrar u ocultar el campo de remesa
+        function checkClavePed() {
+            var clave_ped = document.getElementById('clave_ped').value.toUpperCase();
             var remesa_field = document.getElementById('remesa_field');
             
             if (clave_ped === 'IN' || clave_ped === 'AF' || clave_ped === 'A1' || clave_ped === 'RT') {
@@ -157,6 +158,12 @@
             } else {
                 remesa_field.style.display = 'none';
             }
-        });
+        }
+
+        // Ejecutar la función al cargar la página
+        checkClavePed();
+
+        // Agregar el evento input al campo clave_ped para ejecutar la función
+        document.getElementById('clave_ped').addEventListener('input', checkClavePed);
     });
 </script>

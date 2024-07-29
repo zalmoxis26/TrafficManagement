@@ -43,7 +43,7 @@
                             <table class="table table-striped table-hover p-3" id="table-UserEmpresas">
                                 <thead class="thead table-dark">
                                     <tr>
-                                        <th>No</th>
+                                       
                                         <th  class="text-center">Usuario</th>
                                         <th class="text-center" >Empresa Asignada</th>
                                         <th  class="text-center">Acciones</th>
@@ -52,7 +52,7 @@
                                 <tbody>
                                     @foreach ($usersEmpresas as $usersEmpresa)
                                         <tr>
-                                            <td>{{ ++$i }}</td>  
+                                            
                                             <td >{{ $usersEmpresa->user->name }}</td>
                                             <td class="text-center">{{ $usersEmpresa->empresa->descripcion }}</td>
 

@@ -20,11 +20,10 @@ class UsersEmpresaController extends Controller
      */
     public function index(Request $request): View
     {
-        $usersEmpresas = UsersEmpresa::orderBy('user_id','DESC')->paginate();
+        $usersEmpresas = UsersEmpresa::orderBy('user_id','DESC')->get();
         $currentUser = Auth::user();
 
-        return view('users-empresa.index', compact('usersEmpresas','currentUser'))
-            ->with('i', ($request->input('page', 1) - 1) * $usersEmpresas->perPage());
+        return view('users-empresa.index', compact('usersEmpresas','currentUser'));
     }
 
     /**
@@ -71,7 +70,7 @@ class UsersEmpresaController extends Controller
         if ($empresaId === 'TODOS') {
             // Obtener todos los IDs de las empresas
             $IdsEmpresas = Empresa::pluck('id');
-    
+            
             // Asignar todas las empresas al usuario
             foreach ($IdsEmpresas as $id) {
                 UsersEmpresa::firstOrCreate([
@@ -92,12 +91,15 @@ class UsersEmpresaController extends Controller
     } elseif ($request->input('option') == 'matriz') {
         // Opción 'matriz': Asignación masiva
 
-        // 1. Buscar la empresa matriz
+       
         $matriz = $request->input('matriz');
-        $empresasConMatriz = Empresa::where('empresaMatriz', $matriz)->get();
-
+         // 1. Buscar la empresa  y obtener su clave
+        $claveEmpresaMatriz = Empresa::where('empresaMatriz', $matriz)->pluck('clave')->first();
+         // 1.5 Buscar las empresas con esa clave de la empresa matriz
+        $empresasConMatriz = Empresa::where('clave', $claveEmpresaMatriz)->get();
         // 2. Obtener todos los ids de las empresas que tienen esa empresaMatriz
         $empresaIds = $empresasConMatriz->pluck('id')->toArray();
+
 
         // 5. Asignar todas las empresas de esos usuarios al nuevo usuario
             foreach ($empresaIds as $empresaId) {

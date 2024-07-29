@@ -23,12 +23,12 @@
     <!-- Lista para Asignar por Empresas -->
     <div class="form-group mb-2 mb-5">
         <label for="empresa_id" class="form-label">
-            <input class="form-check-input" type="radio" name="option" value="unica" onchange="toggleSelect(this)"> {{ __('Lista para Asignar por Empresas') }}
+            <input class="form-check-input" type="radio" name="option" value="unica" onchange="toggleSelect(this)"> {{ __('Lista para Asignar por Proveedor') }}
         </label>
         <select id="empresa_id" name="empresa_id" class="form-control @error('empresa_id') is-invalid @enderror" disabled>
-            <option value="" disabled selected>-- Selecciona una empresa --</option>   
+            <option value="" disabled selected>-- Selecciona un Proveedor --</option>   
             <option value="TODOS">
-                *ASIGNAR TODAS LAS EMPRESAS*
+                *ASIGNAR TODOS LOS PROVEEDORES*
             </option>
             @foreach($empresas as $empresa)
                 
@@ -48,7 +48,7 @@
     <!-- Lista para Asignar por Empresa Matriz -->
     <div class="form-group mb-2 mb-4">
         <label for="matriz" class="form-label">
-            <input class="form-check-input" type="radio" name="option" value="matriz" onchange="toggleSelect(this)"> {{ __('Lista para Asignar por Empresa Matriz') }}
+            <input class="form-check-input" type="radio" name="option" value="matriz" onchange="toggleSelect(this)"> {{ __('Lista para Asignar por Cliente') }}
         </label>
         @error('option')
             <div class="invalid-feedback" role="alert">
@@ -56,7 +56,7 @@
             </div>
         @enderror
         <select id="matriz" name="matriz" class="form-control @error('matriz') is-invalid @enderror" disabled>
-            <option value="">-- Selecciona una empresa Matriz --</option>
+            <option value="">-- Selecciona un Cliente --</option>
             @foreach($empresasAgrupadasPorMatriz as $empresaMatriz)
                 <option value="{{ $empresaMatriz->empresaMatriz }}" {{ old('matriz') == $empresaMatriz->empresaMatriz ? 'selected' : '' }}>
                     {{ $empresaMatriz->empresaMatriz }}

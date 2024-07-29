@@ -24,7 +24,7 @@ class FacturaMail extends Mailable
     public function build()
     {
         return $this->view('emails.factura')
-                    ->subject('Nueva Factura Ingresada')
+                    ->subject('Nueva Factura Ingresada' . $this->trafico->factura)
                     ->attach(storage_path('app/public/' . $this->trafico->adjuntoFactura))
                     ->with([
                         'trafico' => $this->trafico,

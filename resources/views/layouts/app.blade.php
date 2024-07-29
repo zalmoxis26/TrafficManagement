@@ -7,7 +7,8 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>@yield('template_title', config('app.name', 'Tracking Agencia SAI'))</title>
+    <link rel="icon" href="{{ asset('storage/SAI-Solucion_Aduanal_integral_logo.png') }}" type="image/jpeg">
 
 
     <!-- Fonts -->

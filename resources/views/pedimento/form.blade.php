@@ -18,7 +18,7 @@
         </div>
         <div class="form-group mb-2 mb20">
             <label for="clave_ped" class="form-label">{{ __('Claveped') }}</label>
-            <input type="text" name="clavePed" class="form-control @error('clavePed') is-invalid @enderror" value="{{ old('clavePed', $pedimento?->clavePed) }}" id="clave_ped" placeholder="Claveped">
+            <input type="text" name="clavePed" class="form-control @error('clavePed') is-invalid @enderror" value="{{ old('clavePed', $pedimento?->clavePed) }}" id="clave_ped" placeholder="Clave Pedimento">
             {!! $errors->first('clavePed', '<div class="invalid-feedback" role="alert"><strong>:message</strong></div>') !!}
         </div>
         <div class="form-group mb-2 mb20">
