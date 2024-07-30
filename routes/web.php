@@ -40,6 +40,11 @@ Route::get('/upload', function () {
     return view('pedimentoTxt.uploadFTP');
 });
 
+//DOCUMENTOS LOCALES
+Route::get('documentslocales/storage/{directory?}', [DocumentFtpController::class, 'indexLocal'])->where('directory', '.*')->name('documentsLocales.index');
+Route::get('documentslocales/download/{directory}/{filename}', [App\Http\Controllers\DocumentFtpController::class, 'downloadLocal'])->where(['directory' => '.*', 'filename' => '.*'])->name('documentsLocales.download');
+Route::get('documentslocales/view/{directory}/{filename}', [App\Http\Controllers\DocumentFtpController::class, 'viewFile'])->where(['directory' => '.*', 'filename' => '.*'])->name('documentsLocales.view');
+
 //PEDIMENTOS TXT (VIZUALIZAR 1 A LA VEZ, ANTIGUO)
 
 Route::get('Antiguo/cargarPedimentoTxt', [PedimentoTxtController::class, 'cargarUnTxt']);

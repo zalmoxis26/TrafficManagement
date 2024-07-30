@@ -99,4 +99,63 @@ class DocumentFtpController extends Controller
             return response()->json(['message' => 'Todos los archivos se subieron exitosamente', 'paths' => $paths], 200);
         }
     }
+
+    public function indexLocal($directory = '/')
+{
+    $directory = urldecode($directory);
+    $localDisk = Storage::disk('local');
+
+    try {
+        $contents = $localDisk->listContents($directory, false);
+        $files = [];
+        $directories = [];
+
+        foreach ($contents as $content) {
+            if ($content['type'] === 'file') {
+                $files[] = $content;
+            } elseif ($content['type'] === 'dir') {
+                $directories[] = $content;
+            }
+        }
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', 'Error al listar los archivos: ' . $e->getMessage());
+    }
+
+    return view('documentosLocales.index', compact('files', 'directories', 'directory'));
+}
+
+    public function downloadLocal($directory, $filename)
+    {
+        $path = urldecode($directory) . '/' . urldecode($filename);
+        $localDisk = Storage::disk('local');
+
+        if ($localDisk->exists($path)) {
+            return response()->download(storage_path('app/' . $path));
+        }
+
+        return redirect()->back()->with('error', 'Archivo no encontrado.');
+    }
+
+    public function viewFile($directory, $filename)
+    {
+        $path = urldecode($directory) . '/' . urldecode($filename);
+        $localDisk = Storage::disk('local');
+
+        if ($localDisk->exists($path)) {
+            $fileContents = $localDisk->get($path);
+            $mimeType = $localDisk->mimeType($path);
+
+            // Verifica si el archivo es PDF o TXT y genera una respuesta adecuada
+            if ($mimeType === 'application/pdf') {
+                return response($fileContents, 200)->header('Content-Type', 'application/pdf');
+            } elseif ($mimeType === 'text/plain') {
+                return response($fileContents, 200)->header('Content-Type', 'text/plain');
+            } else {
+                return response()->json(['error' => 'Tipo de archivo no soportado para visualización'], 400);
+            }
+        }
+
+        return redirect()->back()->with('error', 'Archivo no encontrado.');
+    }
+
 }
