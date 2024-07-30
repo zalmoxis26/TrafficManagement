@@ -20,8 +20,16 @@ class UsersEmpresaController extends Controller
      */
     public function index(Request $request): View
     {
-        $usersEmpresas = UsersEmpresa::orderBy('user_id','DESC')->get();
+        // DE 5 SEGUNDOS
+        /*$usersEmpresas = UsersEmpresa::orderBy('user_id','DESC')->get();
+        $currentUser = Auth::user();*/
+
+        // A 1 SEGUNDO Y MEDIO
+
         $currentUser = Auth::user();
+        $usersEmpresas = UsersEmpresa::with(['user', 'empresa'])->orderBy('user_id', 'DESC')->get();
+
+
 
         return view('users-empresa.index', compact('usersEmpresas','currentUser'));
     }
