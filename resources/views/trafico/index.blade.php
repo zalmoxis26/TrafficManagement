@@ -178,10 +178,14 @@
                                             </td>                                            
                                             <td>{{ $trafico->empresa->descripcion }}</td>
                                             @if ($trafico->adjuntoFactura)
-                                            <td ><a class="d-block mb-1" href="{{ route('facturas.stream',  ['id' => $trafico->id]) }}?v={{ time() }}" target="_blank">{{ $trafico->factura }} </a>
+                                            <td>
+                                                <a class="d-block mb-1" href="{{ route('facturas.stream',  ['id' => $trafico->id]) }}?v={{ time() }}" target="_blank">{{ $trafico->factura }} </a>
                                                 <button type="button" class="btn btn-secondary btn-sm fs-6" data-bs-toggle="modal" title="Sustitur factura" data-bs-target="#sustituirFacturaModal" data-trafico-id="{{$trafico->id}}">
                                                     <i class="bi bi-recycle"></i>
                                                 </button>
+                                                <a style="text-decoration: none;" href="{{ route('traficos.edit', $trafico->id) }}" class="text-secondary fs-4" title="Editar">
+                                                    <i class="bi bi-pencil-fill" style="text-decoration: none;"></i>
+                                                </a>                                                
                                             </td>
                                             @else
 
@@ -192,7 +196,6 @@
                                             </td>
                                             @endif
                                             
-
                                         <td >
                                            
                                             @if(isset($trafico->pedimento) && $trafico->pedimento !== null)

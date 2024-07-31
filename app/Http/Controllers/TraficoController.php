@@ -131,18 +131,83 @@ class TraficoController extends Controller
     {
         $trafico = Trafico::find($id);
 
-        return view('trafico.edit', compact('trafico'));
+         // Obtener el usuario autenticado
+         $usuario = Auth::user();
+         // Obtener las empresas asociadas con el usuario
+         $empresas = $usuario->empresas; // Usando la relación definida en el modelo User
+
+        // Determinar si lleva revisión basado en si existe una revisión asociada
+        $llevaRevision = $trafico->revision ? 'si' : 'no';
+        $ubicacionRevision = $trafico->revision ? $trafico->revision->ubicacionRevision : '';
+
+        return view('trafico.edit', compact('trafico', 'empresas', 'llevaRevision', 'ubicacionRevision'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(TraficoRequest $request, Trafico $trafico): RedirectResponse
+    public function update(Request $request, Trafico $trafico)
     {
-        $trafico->update($request->validated());
 
-        return Redirect::route('traficos.index')
-            ->with('success', 'Trafico updated successfully');
+          // Definir reglas de validación para los campos del formulario
+            $validatedData = $request->validate([
+                'factura' => 'required|string|max:255',
+                'empresa_id' => 'required', // Asegúrate de que la empresa exista
+                'fechaReg' => 'required|date', // Validar la fecha
+                'aduana' => 'required',
+                'patente' => 'required',
+                'Toperacion' => 'required',
+                'lleva_revision' => 'required|in:si,no',
+                'ubicacionRevision' => 'nullable|string|max:255'
+            ]);
+
+        // Actualizar los campos del tráfico con los nuevos datos
+        $trafico->factura = $validatedData['factura'];
+        $trafico->empresa_id = $validatedData['empresa_id'];
+        $trafico->fechaReg = $validatedData['fechaReg'];
+        $trafico->aduana = $validatedData['aduana'];
+        $trafico->patente = $validatedData['patente'];
+        $trafico->Toperacion = $validatedData['Toperacion'];
+        
+
+        // Verificar si se seleccionó "lleva_revision" como "sí"
+        if ($validatedData['lleva_revision'] == 'si') {
+            if ($trafico->revision) {
+                // Actualizar la revisión existente
+                $revision = $trafico->revision;
+                $revision->ubicacionRevision = $validatedData['ubicacionRevision'];
+                $revision->save();
+            } else {
+                // Crear una nueva revisión
+                $revision = new Revisione();
+                $revision->nombreRevisor = 'sinAsignar';
+                $revision->facturaCorrecta = $trafico->fechaReg;
+                $revision->status = 'PENDIENTE';
+                $revision->ubicacionRevision = $validatedData['ubicacionRevision'];
+                $revision->correccionFactura = 'NO';
+                $revision->save();
+
+                // Asociar la nueva revisión al tráfico
+                $trafico->revision()->associate($revision);
+                $trafico->revision_id = $revision->id;
+            }
+            $trafico->Revision = 'PENDIENTE';
+        } else {
+            // Si "lleva_revision" es "no", eliminar la revisión existente si la hay
+            if ($trafico->revision) {
+                $trafico->revision->delete();
+                $trafico->revision()->dissociate();
+                $trafico->Revision = null;
+                $trafico->revision_id = null;
+            }
+        }
+
+        // Guardar los cambios en el tráfico
+        $trafico->save();
+
+        // Redirigir con un mensaje de éxito
+        return redirect()->route('traficos.index')->with('success', 'Tráfico actualizado correctamente.');
+
     }
 
     public function destroy($id): RedirectResponse
@@ -179,9 +244,7 @@ class TraficoController extends Controller
 
     public function storeFromFactura(Request $request)
     {
-
-        
-
+    
         // Definir reglas de validación para los campos del formulario
         $validatedData = $request->validate([
             'factura' => 'required|string|max:255',
