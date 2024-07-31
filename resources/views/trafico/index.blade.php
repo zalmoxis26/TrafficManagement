@@ -245,6 +245,8 @@
                                                 DESADUANAMIENTO LIBRE(VERDE)
                                             @elseif ($trafico->MxDocs === "11")
                                                 RECONOCIMIENTO CONCLUIDO
+                                                @elseif ($trafico->MxDocs === "7")
+                                                LISTOS (DODA PITA EN TRAFICO)
                                             @else
                                                 {{ $trafico->MxDocs }}
                                             @endif

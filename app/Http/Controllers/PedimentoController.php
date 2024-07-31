@@ -141,7 +141,17 @@ class PedimentoController extends Controller
     {
         $trafico = Trafico::find($id);
         $pedimento = Pedimento::find($pedimentoId);
-        $mxDocsStatus = $trafico->MxDocs; // O el campo relevante que almacena el estado actual
+
+        if ($trafico->MxDocs == 'RECONOCIMIENTO CONCLUIDO') {
+            $mxDocsStatus = '11'; // Cambia esta lógica según sea necesario
+        } elseif ($trafico->MxDocs == 'LISTOS (DODA PITA EN TRAFICO)') {
+            $mxDocsStatus = '7';
+        } elseif ($trafico->MxDocs == 'DESADUANAMIENTO LIBRE(VERDE)') {
+            $mxDocsStatus = '9';
+        } else {
+            $mxDocsStatus = $trafico->MxDocs; // Mantener el valor original en otros casos
+        }
+       
 
         return view('pedimento.editFromTrafico', compact('pedimento', 'trafico', 'mxDocsStatus'));
     }
