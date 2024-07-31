@@ -58,7 +58,7 @@
                                <div class="col-md-3">
                                    <div class="form-group mb-2 mb20">
                                        <label for="num_pedimento" class="form-label">{{ __('#Pedimento') }}</label>
-                                       <input type="text" name="numPedimento" class="form-control @error('numPedimento') is-invalid @enderror" value="{{ old('numPedimento', $pedimento?->numPedimento) }}" id="num_pedimento" placeholder="Numpedimento">
+                                       <input type="text" name="numPedimento" class="form-control @error('numPedimento') is-invalid @enderror" value="{{ old('numPedimento', $pedimento?->numPedimento) }}" id="num_pedimento" placeholder="Numpedimento" required>
                                        {!! $errors->first('numPedimento', '<div class="invalid-feedback" role="alert"><strong>:message</strong></div>') !!}
                                    </div>
                                </div>

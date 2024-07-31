@@ -94,6 +94,11 @@ Route::middleware(['auth', 'role:revisor|admin|documentador|cliente'])->group(fu
     Route::get('/embarques/{embarque}', [EmbarqueController::class, 'show'])->name('embarques.show');
     Route::get('/embarques/{embarque}/edit', [EmbarqueController::class, 'edit'])->name('embarques.edit');
     Route::delete('/embarques/{embarque}', [EmbarqueController::class, 'destroy'])->name('embarques.destroy');
+    Route::patch('/embarques/{embarque}', [EmbarqueController::class, 'update'])->name('embarques.update');
+    Route::post('/embarques', [EmbarqueController::class, 'store'])->name('embarques.store');
+    Route::post('/embarques/FromTrafico/create', [EmbarqueController::class , 'createFromTrafico'])->name('embarque.createFromTrafico');
+    Route::post('/embarques/FromTrafico/store', [EmbarqueController::class , 'storeFromTrafico'])->name('embarquesFromTrafico.store');
+    Route::post('/embarques/FromTrafico/desasignar', [EmbarqueController::class , 'desasignarFromTrafico'])->name('embarque.desasignarFromTrafico');
 
 
      //EMPRESAS
@@ -112,13 +117,7 @@ Route::middleware(['auth', 'role:revisor|admin|documentador|cliente'])->group(fu
 
 Route::middleware(['auth', 'role:admin|documentador'])->group(function () {
 
-        
-        //EMBARQUES
-        Route::patch('/embarques/{embarque}', [EmbarqueController::class, 'update'])->name('embarques.update');
-        Route::post('/embarques', [EmbarqueController::class, 'store'])->name('embarques.store');
-        Route::post('/embarques/FromTrafico/create', [EmbarqueController::class , 'createFromTrafico'])->name('embarque.createFromTrafico');
-        Route::post('/embarques/FromTrafico/store', [EmbarqueController::class , 'storeFromTrafico'])->name('embarquesFromTrafico.store');
-        Route::post('/embarques/FromTrafico/desasignar', [EmbarqueController::class , 'desasignarFromTrafico'])->name('embarque.desasignarFromTrafico');
+
 
         //PEDIMENTOS
         Route::resource('pedimentos', PedimentoController::class);
