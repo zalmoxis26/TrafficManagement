@@ -200,6 +200,8 @@ class TraficoController extends Controller
                 $trafico->revision()->dissociate();
                 $trafico->revision_id = null;
             }
+
+            $trafico->Revision = 'N/A';
         }
 
         // Guardar los cambios en el tráfico
