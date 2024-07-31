@@ -196,8 +196,8 @@ class TraficoController extends Controller
             // Si "lleva_revision" es "no", eliminar la revisión existente si la hay
             if ($trafico->revision) {
                 $trafico->revision->delete();
+                $trafico->Revision = 'N/A';
                 $trafico->revision()->dissociate();
-                $trafico->Revision = null;
                 $trafico->revision_id = null;
             }
         }
