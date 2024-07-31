@@ -221,9 +221,24 @@ class TraficoController extends Controller
         $trafico->pedimento()->delete();
         $trafico->anexos()->delete();
         $trafico->comments()->delete();
+        $trafico->historials()->delete();
 
-    // Finalmente, eliminar el tráfico
-    $trafico->delete();
+
+        // Eliminar la carpeta de facturas asociada al tráfico
+        $folders = [
+            'Facturas/FacturaTrafico_' . $trafico->id,
+            'Revisiones/RevisionTrafico_' . $trafico->id,
+            'Anexos/AnexoTrafico_' . $trafico->id,
+        ];
+
+        foreach ($folders as $folder) {
+            if (Storage::disk('public')->exists($folder)) {
+                Storage::disk('public')->deleteDirectory($folder);
+            }
+        }
+
+        // Finalmente, eliminar el tráfico
+        $trafico->delete();
 
 
         return Redirect::route('traficos.index')

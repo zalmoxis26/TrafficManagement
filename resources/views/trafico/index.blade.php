@@ -265,16 +265,21 @@
                                             <td >{{ $trafico->aduana }}</td>
                                             <td class="text-center">{{ $trafico->patente}}</td>
                                           
-
                                             <td>
                                                 <form action="{{ route('traficos.destroy', $trafico->id) }}" method="POST">
-                                                    <a class="btn btn-sm btn-primary fs-6 me-1 mt-1" href="{{ route('traficos.show', $trafico->id) }}"><i class="bi bi-eye"></i>Ver</a>
-                                                   <!-- <a class="btn btn-sm btn-success fs-6 mt-1" href="{{ route('traficos.edit', $trafico->id) }}"><i class="bi bi-pencil-square"></i>Edit</a> -->
+                                                    <a class="btn btn-sm btn-primary fs-6 me-1 mt-1" href="{{ route('traficos.show', $trafico->id) }}">
+                                                        <i class="bi bi-eye"></i> Ver
+                                                    </a>
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" hidden class="btn btn-danger btn-sm fs-5" onclick="event.preventDefault(); confirm('Are you sure to delete?') ? this.closest('form').submit() : false;"><i class="bi bi-trash"></i></button>
+                                                    @role('admin')
+                                                        <button type="submit" class="btn btn-sm btn-danger  me-1 mt-1" onclick="event.preventDefault(); confirm('Are you sure to delete?') ? this.closest('form').submit() : false;">
+                                                            <i class="bi bi-trash"></i>Borrar
+                                                        </button>
+                                                    @endrole    
                                                 </form>
                                             </td>
+
                                         </tr>
                                     @endforeach
                                 </tbody>
