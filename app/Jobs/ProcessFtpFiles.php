@@ -408,18 +408,28 @@ class ProcessFtpFiles implements ShouldQueue
     {
         try {
             // Obtener los correos electrónicos de los usuarios asociados a la empresa
-            $userIds = \DB::table('users_empresa')->where('empresa_id', $trafico->empresa_id)->pluck('user_id');
+
+            // IDs que deseas excluir
+            $excludeIds = [24, 25, 26,14];
+
+            $userIds = \DB::table('users_empresa')
+            ->where('empresa_id', $trafico->empresa_id)
+            ->whereNotIn('user_id', $excludeIds)
+            ->pluck('user_id');
+
             $emails = User::whereIn('id', $userIds)->pluck('email')->toArray();
 
-            // Dividir los correos electrónicos en lotes de 10 (ajustar según sea necesario)
-            $batchSize = 10;
-            $chunks = array_chunk($emails, $batchSize);
+           // Establecer el destinatario principal
+            $principalEmail = 'mbarrancas@agenciasai.com';
 
-            foreach ($chunks as $chunk) {
-                foreach ($chunk as $email) {
-                    Mail::to($email)->send(new FacturaMail($trafico));
-                }
-                //Log::info('Batch of emails sent', ['trafico_id' => $trafico->id, 'emails' => $chunk]);
+
+
+            if (!empty($emails)) {
+                Mail::to($principalEmail)
+                    ->cc($emails)
+                    ->send(new FacturaMail($trafico));
+
+                // Log::info('Emails sent', ['trafico_id' => $trafico->id, 'principal' => $principalEmail, 'cc' => $ccEmails]);
             }
 
             //Log::info('Correos enviados con éxito', ['trafico_id' => $trafico->id, 'emails' => $emails]);
