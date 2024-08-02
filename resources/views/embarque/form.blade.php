@@ -123,7 +123,7 @@
         <div class="col-md-3">
             <div class="form-group mb-3 mb20">
                 <label for="placas" class="form-label">{{ __('Placas') }}</label>
-                <input type="text" name="Placas" class="form-control" id="placas"  maxlength="6" pattern="[A-Za-z0-9]{1,6}" value="{{$embarque->Placas}}">
+                <input type="text" name="Placas" class="form-control" id="placas"  maxlength="7" pattern="[A-Za-z0-9]{1,7}" value="{{$embarque->Placas}}">
             </div>
         </div>   
 
