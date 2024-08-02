@@ -99,6 +99,8 @@ Route::middleware(['auth', 'role:revisor|admin|documentador|cliente'])->group(fu
     Route::post('/embarques/FromTrafico/create', [EmbarqueController::class , 'createFromTrafico'])->name('embarque.createFromTrafico');
     Route::post('/embarques/FromTrafico/store', [EmbarqueController::class , 'storeFromTrafico'])->name('embarquesFromTrafico.store');
     Route::post('/embarques/FromTrafico/desasignar', [EmbarqueController::class , 'desasignarFromTrafico'])->name('embarque.desasignarFromTrafico');
+    
+    Route::post('embarques/validadar/numEmbarque', [EmbarqueController::class, 'validateNumEmbarque'])->name('validate.numEmbarque');
 
 
      //EMPRESAS

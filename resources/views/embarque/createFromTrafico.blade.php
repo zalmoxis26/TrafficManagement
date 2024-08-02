@@ -23,7 +23,8 @@
                                     <div class="col-md-3">
                                         <div class="form-group mb-3 mb20">
                                             <label for="num_embarque" class="form-label">{{ __('#Embarque') }}</label>
-                                            <input type="text" name="numEmbarque" class="form-control" value="E" id="num_embarque" required>
+                                            <input type="text" name="numEmbarque" class="form-control"  id="num_embarque" value="{{ $newNumEmbarque}}" required>
+                                            <div class="invalid-feedback" id="numEmbarqueError"></div>
                                         </div>
                                     </div> 
                                     <div class="col-md-3">
@@ -182,4 +183,35 @@
             </div>
         </div>
     </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            $('#num_embarque').on('input', function() {
+                var numEmbarque = $(this).val();
+
+                if (numEmbarque.trim() !== '') {
+                    $.ajax({
+                        url: "{{ route('validate.numEmbarque') }}",
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            numEmbarque: numEmbarque
+                        },
+                        success: function(response) {
+                            if (response.exists) {
+                                $('#numEmbarqueError').text('El número de embarque ya está en uso.').show();
+                                $('#num_embarque').val('');
+                            } else {
+                                $('#numEmbarqueError').text('').hide();
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+
+
+
 @endsection

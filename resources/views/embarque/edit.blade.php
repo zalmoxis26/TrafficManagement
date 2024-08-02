@@ -165,6 +165,40 @@
         window.agregarComentario = agregarComentario;
     });
     </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Obtener el valor inicial del número de embarque al cargar la página
+        var initialNumEmbarque = $('#num_embarque').val();
+
+        $('#num_embarque').on('input', function() {
+            var numEmbarque = $(this).val();
+
+            if (numEmbarque.trim() !== '' && numEmbarque !== initialNumEmbarque) {
+                $.ajax({
+                    url: "{{ route('validate.numEmbarque') }}",
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        numEmbarque: numEmbarque
+                    },
+                    success: function(response) {
+                        if (response.exists) {
+                            $('#numEmbarqueError').text('El número de embarque ya está en uso.').show();
+                            $('#num_embarque').val('');
+                        } else {
+                            $('#numEmbarqueError').text('').hide();
+                        }
+                    }
+                });
+            } else {
+                $('#numEmbarqueError').text('').hide();
+            }
+        });
+    });
+</script>
+
+
     
 
 @endsection

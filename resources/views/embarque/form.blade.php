@@ -12,6 +12,7 @@
                 <div class="form-group mb-3 mb20">
                     <label for="num_embarque" class="form-label">{{ __('#Embarque') }}</label>
                     <input type="text" name="numEmbarque" class="form-control" value="{{$embarque->numEmbarque}}" id="num_embarque" required>
+                     <div class="invalid-feedback" id="numEmbarqueError"></div>
                 </div>
             </div>    
 

@@ -165,10 +165,10 @@
 
                                                 @if ($trafico->embarques->isNotEmpty())
                                                     <a href="{{ route('embarques.edit', $trafico->embarques->first()->id) }}" >
-                                                        {{ $trafico->embarque }}
+                                                        {{ $trafico->embarques->first()->numEmbarque }}
                                                     </a>
                                                 @else
-                                                    {{ $trafico->embarque}}        
+                                                {{ optional($trafico->embarque)->numEmbarque ?? '' }}     
                                                 @endif
                                             </td>
                                           
@@ -610,6 +610,7 @@ document.addEventListener('DOMContentLoaded', function () {
             "order": [],
             "stateSave": true, // Habilitar stateSave
             "columnDefs": [
+                { "type": "num", targets: [0] }, 
                 { "type": "date", targets: [3] } // Ajusta el índice según tu estructura.
             ]
         });

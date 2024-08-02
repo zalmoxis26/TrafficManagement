@@ -39,12 +39,14 @@ class EmbarqueController extends Controller
 
     public function createFromTrafico(Request $request)
 {
+
     // Obtener los IDs de trafico seleccionados desde la solicitud
     $trafico_ids = $request->input('trafico_ids');
     $fechaDeHoy = Carbon::now('America/Los_Angeles')->format('Y-m-d\TH:i');
 
     // Validar si no se han seleccionado traficos
     if (empty($trafico_ids)) {
+
         return redirect()->back()->with('error', 'SELECCIONA ALMENOS UN TRAFICO A ASIGNAR');
     }
 
@@ -111,9 +113,33 @@ class EmbarqueController extends Controller
 
     }
 
-    $embarque = new Embarque();
+    //SI NO HAY EMBARQUE ASIGNADO PARA NINGUNO DE LOS TRAFICOS SE CREA UNO NUEVO
+
     
-    return view('embarque.createFromTrafico', compact('embarque','trafico_ids','fechaDeHoy'));
+    $embarque = new Embarque();
+     // Obtener el número de embarque máximo de la base de datos
+     $maxNumEmbarque = Embarque::max('numEmbarque');
+        
+     // Inicializar el nuevo número de embarque
+     $newNumEmbarque = 'E01'; // Valor por defecto si no hay registros
+
+     if ($maxNumEmbarque) {
+         // Extraer la parte numérica del número de embarque usando una expresión regular
+         $numericPart = (int) filter_var($maxNumEmbarque, FILTER_SANITIZE_NUMBER_INT);
+         
+         // Incrementar el número extraído en uno
+         $newNumericPart = $numericPart + 1;
+         
+         // Formatear el nuevo número de embarque con el prefijo 'E' y ceros a la izquierda
+         $newNumEmbarque = 'E' . str_pad($newNumericPart, 2, '0', STR_PAD_LEFT);
+
+        }
+
+        // Crear una nueva instancia de Embarque
+        $embarque = new Embarque();
+      
+    
+    return view('embarque.createFromTrafico', compact('embarque','trafico_ids','fechaDeHoy','newNumEmbarque'));
 }
 
     /**
@@ -129,7 +155,6 @@ class EmbarqueController extends Controller
 
     public function storeFromTrafico(Request $request){
 
-       
 
         $embarque = Embarque::create($request->all());
         $embarque->Caat = $request->input("CaaT");
@@ -341,4 +366,19 @@ class EmbarqueController extends Controller
 
         return Excel::download(new EmbarquesExport($fechaInicio, $fechaFin, $modulado), 'embarques.xlsx');
     }
+
+
+    public function validateNumEmbarque(Request $request)
+    {
+        $numEmbarqueExists = Embarque::where('numEmbarque', $request->numEmbarque)->exists();
+
+        if ($numEmbarqueExists) {
+            return response()->json(['exists' => true], 200);
+        }
+
+        return response()->json(['exists' => false], 200);
+    }
+
+
+
 }
