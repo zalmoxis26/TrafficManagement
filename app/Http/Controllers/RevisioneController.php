@@ -111,10 +111,15 @@ class RevisioneController extends Controller
         } 
 
     
-        if ($request->input('Revision') === "LIBERADA" &&  is_null($revisione->finRevision)) {
+        if ($request->input('Revision') === "LIBERADA" ) {
             // Establecer la fecha de fin de la revisión
-            $revisione->finRevision = Carbon::now('America/Los_Angeles')->format('Y-m-d\TH:i');
-    
+            $finRevisionRequest = $request->input('finRevision');
+
+            // Si el valor del request es nulo, se usa Carbon::now(), de lo contrario se usa el valor del request
+            $revisione->finRevision = is_null($finRevisionRequest)
+                ? Carbon::now('America/Los_Angeles')->format('Y-m-d\TH:i')
+                : Carbon::parse($finRevisionRequest)->format('Y-m-d\TH:i');
+            
             // Convertir las fechas de inicio y fin a instancias de Carbon
             $inicio = Carbon::parse($revisione->inicioRevision);
             $fin = Carbon::parse($revisione->finRevision);

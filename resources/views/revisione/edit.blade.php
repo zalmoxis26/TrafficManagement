@@ -44,14 +44,14 @@
                                 <div class="col-md-2">
                                     <div class="form-group mb-2 mb20" d>
                                         <label for="inicio_revision" class="form-label">{{ __('Inicio Revision') }}</label>
-                                        <input disabled type="datetime-local" name="inicioRevision" class="form-control @error('inicioRevision') is-invalid @enderror" value="{{ old('inicioRevision', $revisione?->inicioRevision) }}" id="inicio_revision" placeholder="Iniciorevision">
+                                        <input type="datetime-local" name="inicioRevision" class="form-control @error('inicioRevision') is-invalid @enderror" value="{{ old('inicioRevision', $revisione?->inicioRevision) }}" id="inicio_revision" placeholder="Iniciorevision">
                                         {!! $errors->first('inicioRevision', '<div class="invalid-feedback" role="alert"><strong>:message</strong></div>') !!}
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="form-group mb-2 mb20">
                                         <label for="fin_revision" class="form-label">{{ __('Fin Revision') }}</label>
-                                        <input disabled type="datetime-local" name="finRevision" class="form-control @error('finRevision') is-invalid @enderror" value="{{ old('finRevision', $revisione?->finRevision) }}" id="fin_revision" placeholder="Finrevision">
+                                        <input type="datetime-local" name="finRevision" class="form-control @error('finRevision') is-invalid @enderror" value="{{ old('finRevision', $revisione?->finRevision) }}" id="fin_revision" placeholder="Finrevision">
                                         {!! $errors->first('finRevision', '<div class="invalid-feedback" role="alert"><strong>:message</strong></div>') !!}
                                     </div>
                                 </div>
