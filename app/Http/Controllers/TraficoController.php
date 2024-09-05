@@ -37,11 +37,13 @@ class TraficoController extends Controller
         $empresasAsignadasIds = $user->empresas->pluck('empresa_id');
 
         
-          // Filtrar los tráficos por las empresas asignadas al usuario autenticado
+       // Filtrar los tráficos por las empresas asignadas al usuario autenticado y cargar las relaciones
         $traficos = Trafico::whereIn('empresa_id', $empresasAsignadasIds)
-                    ->Where('statusTrafico','ABIERTO') 
-                    ->orderBy('fechaReg','DESC')   
-                    ->get();
+        ->where('statusTrafico', 'ABIERTO') 
+        ->orderBy('fechaReg', 'DESC')
+        ->with(['empresa', 'pedimento', 'embarques', 'revision'])
+        ->get();
+
 
         return view('trafico.index', compact('traficos'));
     }
