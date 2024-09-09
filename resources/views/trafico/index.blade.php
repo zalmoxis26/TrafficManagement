@@ -25,6 +25,46 @@
 
 
     <div class="container-fluid">
+
+        <div class="row">    
+            <!-- NAVBAR-->
+            <div class="mb-3 text-white" >
+                <div class="d-flex justify-content-between align-items-center bg-dark pt-3 pb-3 rounded-3" >
+                    <div class="left-container  mx-4 d-flex align-items-center">
+                        <label for="empresaSelect" class="form-label fs-5 me-1">Empresa:</label>
+                        <select class="form-select  me-3" name="empresaSelect" id="empresaSelect" aria-label="Default select example">
+                            <option selected value="00">TODAS LAS EMPRESAS</option>
+                                @foreach($userEmpresas as $userEmpresa)
+                                    <option value="{{ $userEmpresa->empresa->id }}" {{ old('empresaSelect', $request->empresaSelect) == $userEmpresa->empresa->id ? 'selected' : '' }}>
+                                        {{ $userEmpresa->empresa->descripcion }}
+                                    </option>
+                                @endforeach 
+                        </select>
+                        <button id="btnBuscar" class="btn btn-md btn-primary" title="Buscar"><i class="bi bi-search"></i></button>
+                    </div>
+                    
+                    <div class="right-container d-flex align-items-center">
+                        <div id="date-container" class="d-flex align-items-center me-4">
+                            <div class="me-3">
+                                <label id="lblFechaInicial" for="txtFechaInicio"  class="fs-5 form-label">Desde:</label>
+                            </div>
+                            <div class="me-3">
+                                <input id="txtFechaInicio" name="fechaInicio" value="{{ old('fechaInicio', $request->fechaInicio ?? $fechaInicio) }}" class="form-control" type="date">
+                            </div>
+                            <div class="me-3">
+                                <label id="fechaFin" name="fechaFin" for="txtFechaFin" class="fs-5 form-label">Hasta:</label>
+                            </div>
+                            <div class="me-3">
+                                <input id="txtFechaFin" name="fechaFin" value="{{ old('fechaFin', $request->fechaFin ?? $fechaFin) }}" class="form-control" type="date">
+                            </div>
+                            <button id="btnBuscarPorFecha" class="btn btn-md btn-primary" title="Buscar por fecha"><i class="bi bi-search"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+
+
         <div class="row">
             <div class="col-sm-12">
                 <div class="card">
@@ -655,6 +695,29 @@ document.addEventListener('DOMContentLoaded', function () {
             tabla.search('').draw();
         });
     });
+
+
+    //SCRIPT PARA LOS FILTROS EMPRESA Y FECHA  DEL NAVBAR
+
+    document.getElementById('btnBuscar').addEventListener('click', function() {
+            const empresaSelect = document.getElementById('empresaSelect').value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('empresaSelect', empresaSelect);
+            window.location.href = url;
+        });
+
+        document.getElementById('btnBuscarPorFecha').addEventListener('click', function() {
+            const fechaInicio = document.getElementById('txtFechaInicio').value;
+            const fechaFin = document.getElementById('txtFechaFin').value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('fechaInicio', fechaInicio);
+            url.searchParams.set('fechaFin', fechaFin);
+            window.location.href = url;
+        });
+
+
+
+
 });
 </script>
 

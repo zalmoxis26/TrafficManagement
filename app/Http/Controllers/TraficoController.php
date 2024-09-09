@@ -33,19 +33,48 @@ class TraficoController extends Controller
         // Obtener el usuario autenticado
         $user = auth()->user();
 
+        // Obtener las empresas asignadas al usuario
+        $userEmpresas = $user->empresas;
+
         // Obtener los IDs de las empresas asignadas al usuario
         $empresasAsignadasIds = $user->empresas->pluck('empresa_id');
 
+
+        // Definir las fechas por defecto
+        $defaultFechaFin = Carbon::now()->addDay()->format('Y-m-d');
+        $defaultFechaInicio = Carbon::now()->startOfMonth()->format('Y-m-d');
+  
+        // Usar las fechas proporcionadas en el request si existen, de lo contrario usar las fechas por defecto
+        $fechaInicio = $request->input('fechaInicio', $defaultFechaInicio);
+        $fechaFin = $request->input('fechaFin', $defaultFechaFin);
+    
+        // Validar que la diferencia entre las fechas no sea mayor a 4 meses
+        $fechaInicioCarbon = Carbon::parse($fechaInicio)->startOfDay();
+        $fechaFinCarbon = Carbon::parse($fechaFin)->endOfDay();
+
+  
+      if ($fechaInicioCarbon->diffInMonths($fechaFinCarbon) > 3) {
+          return redirect()->back()->withErrors(['Las Seleccion de fechas no pueden tener una diferencia mayor a 3 meses.']);
+      }
+
         
        // Filtrar los tráficos por las empresas asignadas al usuario autenticado y cargar las relaciones
-        $traficos = Trafico::whereIn('empresa_id', $empresasAsignadasIds)
-        ->where('statusTrafico', 'ABIERTO') 
-        ->orderBy('fechaReg', 'DESC')
-        ->with(['empresa', 'pedimento', 'embarques', 'revision'])
-        ->get();
+      $query = Trafico::whereIn('empresa_id', $empresasAsignadasIds)
+      ->where('statusTrafico', 'ABIERTO')
+      ->whereBetween('fechaReg', [$fechaInicio, $fechaFin]);
+
+        // Filtrar por empresa seleccionada
+      if ($request->has('empresaSelect') && $request->empresaSelect != '00') {
+        $query->whereHas('empresa', function($q) use ($request) {
+            $q->where('id', $request->empresaSelect);
+        });
+    }
+
+    // Obtener los tráficos filtrados
+    $traficos = $query->orderBy('fechaReg', 'DESC')->get();
 
 
-        return view('trafico.index', compact('traficos'));
+        return view('trafico.index', compact('traficos', 'userEmpresas','fechaInicio','fechaFin', 'request'));
     }
 
     public function indexTraficosCerrados(Request $request)
