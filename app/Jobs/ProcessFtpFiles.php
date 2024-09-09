@@ -234,8 +234,8 @@ class ProcessFtpFiles implements ShouldQueue
                     }
                     
 //CREAR VALIDACION
-                    $validatedData = $request->validate([
-                        'factura' => 'required|string|max:255|unique:traficos,factura',
+                    $validatedData = ([
+                        'factura' => 'required|string|max:255|unique:,factura',
                         'empresa_id' => 'required|exists:empresas,id',
                         'fechaReg' => 'required|date',
                         'adjuntoFactura' => 'required|string',
@@ -259,8 +259,6 @@ class ProcessFtpFiles implements ShouldQueue
     
 
 // SI VALIDACION FALLA   
-
-
 
                     if ($validator->fails()) {
                         $errorMessage = '*1001|Validación fallida para la factura: ' . $data[16] . PHP_EOL;
