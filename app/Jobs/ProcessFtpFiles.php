@@ -235,7 +235,7 @@ class ProcessFtpFiles implements ShouldQueue
                     
 //CREAR VALIDACION
                     $validatedData = ([
-                        'factura' => 'required|string|max:255|unique:,factura',
+                        'factura' => 'required|string|max:255|unique:facturas,factura',
                         'empresa_id' => 'required|exists:empresas,id',
                         'fechaReg' => 'required|date',
                         'adjuntoFactura' => 'required|string',
