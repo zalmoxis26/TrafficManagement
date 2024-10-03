@@ -29,6 +29,24 @@
 
 @section('content')
     <section class="content container-fluid">
+
+        <!--MENSAJES DE ERROR EN LA PARTE DE ARRIBA-->
+
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+    
+
         <div class="row">
             <div class="col-md-10 mx-auto">
                 <div class="card" >
@@ -49,6 +67,7 @@
                                         <th width="30%;">Archivo</th>
                                         <th>Comentarios u Observaciones</th>
                                         <th>Fecha</th>
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -60,6 +79,17 @@
                                             </td>
                                             <td class="descripcion">{{ $anexo->descripcion }}</td>
                                             <td>{{ \Carbon\Carbon::parse($anexo->created_at)->format('d-M-Y H:i:s') }}</td>
+                                            <td class="text-center">
+                                                <!-- Formulario para eliminar -->
+                                                <form action="{{ route('anexos.destroy', $anexo->id) }}" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este anexo?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <!-- Botón de eliminar con icono de Bootstrap -->
+                                                    <button type="submit" class="btn btn-danger btn-sm">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>

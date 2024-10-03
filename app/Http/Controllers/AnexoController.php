@@ -46,7 +46,7 @@ class AnexoController extends Controller
         $validator = Validator::make($request->all(), [
             'trafico_id' => 'required|exists:traficos,id',
             'descripcion' => 'max:255',
-            'archivo' => 'required|file|mimes:pdf,jpg,png,doc,docx,xls,xlsx|max:2048',
+            'archivo' => 'required|file|mimes:pdf,jpg,png,doc,docx,xls,xlsx,txt|max:2048',
         ]);
     
         if ($validator->fails()) {
@@ -114,9 +114,20 @@ class AnexoController extends Controller
 
     public function destroy($id): RedirectResponse
     {
-        Anexo::find($id)->delete();
+        $anexo = Anexo::find($id);
 
-        return Redirect::route('anexos.index')
-            ->with('success', 'Anexo deleted successfully');
+        if ($anexo) {
+            // Eliminar el archivo del almacenamiento
+            if (Storage::exists('public/' . $anexo->archivo)) {
+                Storage::delete('public/' . $anexo->archivo);
+            }
+
+            // Eliminar el registro de la base de datos
+            $anexo->delete();
+
+            return redirect()->back()->with('success', 'Anexo eliminado exitosamente.');
+        }
+
+        return redirect()->back()->with('error', 'Anexo no encontrado.');
     }
 }
