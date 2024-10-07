@@ -132,6 +132,7 @@
     </script>
     
     <!--formatear links -->
+
     <script>
         $(document).ready(function() {
         function createLink(content) {
@@ -166,12 +167,15 @@
     });
     </script>
 
+
+
 <script>
+    
     document.addEventListener('DOMContentLoaded', function() {
         // Obtener el valor inicial del número de embarque al cargar la página
         var initialNumEmbarque = $('#num_embarque').val();
 
-        $('#num_embarque').on('input', function() {
+        $('#num_embarque').on('change', function() {
             var numEmbarque = $(this).val();
 
             if (numEmbarque.trim() !== '' && numEmbarque !== initialNumEmbarque) {

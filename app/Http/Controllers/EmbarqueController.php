@@ -117,23 +117,32 @@ class EmbarqueController extends Controller
 
     
     $embarque = new Embarque();
-     // Obtener el número de embarque máximo de la base de datos
-     $maxNumEmbarque = Embarque::max('numEmbarque');
-        
-     // Inicializar el nuevo número de embarque
-     $newNumEmbarque = 'E01'; // Valor por defecto si no hay registros
 
-     if ($maxNumEmbarque) {
-         // Extraer la parte numérica del número de embarque usando una expresión regular
-         $numericPart = (int) filter_var($maxNumEmbarque, FILTER_SANITIZE_NUMBER_INT);
-         
-         // Incrementar el número extraído en uno
-         $newNumericPart = $numericPart + 1;
-         
-         // Formatear el nuevo número de embarque con el prefijo 'E' y ceros a la izquierda
-         $newNumEmbarque = 'E' . str_pad($newNumericPart, 2, '0', STR_PAD_LEFT);
+    // Obtener el número de embarque más alto con un límite de 1-4 dígitos numéricos después de 'E'
+    $maxNumEmbarque = Embarque::select('numEmbarque')
+    ->whereRaw("numEmbarque LIKE 'E%' AND CHAR_LENGTH(SUBSTRING(numEmbarque, 2)) <= 4")
+    ->orderByRaw("CAST(SUBSTRING(numEmbarque, 2) AS UNSIGNED) DESC")
+    ->first();
 
+    // Inicializar el nuevo número de embarque
+    $newNumEmbarque = 'E01'; // Valor por defecto si no hay registros
+
+    if ($maxNumEmbarque && $maxNumEmbarque->numEmbarque) {
+        if (preg_match('/^E(\d+)$/', $maxNumEmbarque->numEmbarque, $matches)) {
+            // Extraer la parte numérica del número de embarque
+            $numericPart = (int) $matches[1];
+            
+            // Incrementar el número extraído en uno
+            $newNumericPart = $numericPart + 1;
+            
+            // Asignar el nuevo número de embarque
+            $newNumEmbarque = 'E' . $newNumericPart;
         }
+    }
+
+
+     
+
 
         // Crear una nueva instancia de Embarque
         $embarque = new Embarque();
