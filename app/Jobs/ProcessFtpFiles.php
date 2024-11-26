@@ -410,7 +410,7 @@ class ProcessFtpFiles implements ShouldQueue
             // Obtener los correos electrónicos de los usuarios asociados a la empresa
 
             // IDs que deseas excluir
-            $excludeIds = [24, 25, 26,14];
+            $excludeIds = [24, 25, 26,14,13,3];
 
             $userIds = \DB::table('users_empresa')
             ->where('empresa_id', $trafico->empresa_id)
