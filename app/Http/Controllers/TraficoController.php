@@ -29,98 +29,131 @@ class TraficoController extends Controller
      */
     public function index(Request $request)
     {
-
         // Obtener el usuario autenticado
         $user = auth()->user();
+    
+        // =========================================================================================
+        // CÓDIGO ORIGINAL (comentado):
+        // $userEmpresas = $user->empresas; 
+        //
+        // NUEVO: obtener todas las empresas
+        // =========================================================================================
 
-        // Obtener las empresas asignadas al usuario
-        $userEmpresas = $user->empresas;
+        
+        $userEmpresas = Empresa::all();
 
-        // Obtener los IDs de las empresas asignadas al usuario
-        $empresasAsignadasIds = $user->empresas->pluck('empresa_id');
+    
+        // =================================================================================================
+        // CÓDIGO ORIGINAL (comentado):
+        // $empresasAsignadasIds = $user->empresas->pluck('empresa_id');
+        // =================================================================================================
 
-
+    
         // Definir las fechas por defecto
         $defaultFechaFin = Carbon::now()->addDay()->format('Y-m-d');
         $defaultFechaInicio = Carbon::now()->startOfMonth()->format('Y-m-d');
-  
+      
         // Usar las fechas proporcionadas en el request si existen, de lo contrario usar las fechas por defecto
         $fechaInicio = $request->input('fechaInicio', $defaultFechaInicio);
         $fechaFin = $request->input('fechaFin', $defaultFechaFin);
     
-        // Validar que la diferencia entre las fechas no sea mayor a 4 meses
+        // Validar que la diferencia entre las fechas no sea mayor a 3 meses
         $fechaInicioCarbon = Carbon::parse($fechaInicio)->startOfDay();
         $fechaFinCarbon = Carbon::parse($fechaFin)->endOfDay();
-
-  
-      if ($fechaInicioCarbon->diffInMonths($fechaFinCarbon) > 3) {
-          return redirect()->back()->withErrors(['Las Seleccion de fechas no pueden tener una diferencia mayor a 3 meses.']);
-      }
-
-        
-       // Filtrar los tráficos por las empresas asignadas al usuario autenticado y cargar las relaciones
-      $query = Trafico::whereIn('empresa_id', $empresasAsignadasIds)
-      ->where('statusTrafico', 'ABIERTO')
-      ->whereBetween('fechaReg', [$fechaInicio, $fechaFin]);
-
+    
+        if ($fechaInicioCarbon->diffInMonths($fechaFinCarbon) > 3) {
+            return redirect()->back()->withErrors(['Las Seleccion de fechas no pueden tener una diferencia mayor a 3 meses.']);
+        }
+    
+        // =================================================================================================
+        // CÓDIGO ORIGINAL (comentado):
+        //
+        // Filtrar los tráficos por las empresas asignadas al usuario autenticado:
+        // $query = Trafico::whereIn('empresa_id', $empresasAsignadasIds)
+        //                ->where('statusTrafico', 'ABIERTO')
+        //                ->whereBetween('fechaReg', [$fechaInicio, $fechaFin]);
+        //
+        // NUEVO: Quitar filtro por empresa, para mostrar todos los tráficos:
+        // =================================================================================================
+    
+        $query = Trafico::where('statusTrafico', 'ABIERTO')
+                        ->whereBetween('fechaReg', [$fechaInicio, $fechaFin]);
+    
         // Filtrar por empresa seleccionada
-      if ($request->has('empresaSelect') && $request->empresaSelect != '00') {
-        $query->whereHas('empresa', function($q) use ($request) {
-            $q->where('id', $request->empresaSelect);
-        });
-    }
-
-    // Obtener los tráficos filtrados
-    $traficos = $query->orderBy('fechaReg', 'DESC')->get();
-
-
+        if ($request->has('empresaSelect') && $request->empresaSelect != '00') {
+            $query->whereHas('empresa', function($q) use ($request) {
+                $q->where('id', $request->empresaSelect);
+            });
+        }
+    
+        // Obtener los tráficos filtrados
+        $traficos = $query->orderBy('fechaReg', 'DESC')->get();
+    
         return view('trafico.index', compact('traficos', 'userEmpresas','fechaInicio','fechaFin', 'request'));
     }
-
+    
     public function indexTraficosCerrados(Request $request)
-{
-    // Obtener el usuario autenticado
-    $user = auth()->user();
+    {
+        // Obtener el usuario autenticado
+        $user = auth()->user();
+    
+        // =========================================================================================
+        // CÓDIGO ORIGINAL (comentado):
+        // $userEmpresas = $user->empresas; 
+        //
+        // NUEVO: obtener todas las empresas
+        // =========================================================================================
 
-    // Obtener las empresas asignadas al usuario
-    $userEmpresas = $user->empresas;
-
-    // Obtener solo los IDs de las empresas asignadas al usuario
-    $empresasAsignadasIds = $userEmpresas->pluck('empresa.id');
-
-      // Definir las fechas por defecto
-      $defaultFechaFin = Carbon::now()->format('Y-m-d');
-      $defaultFechaInicio = Carbon::now()->startOfMonth()->format('Y-m-d');
-  
-      // Usar las fechas proporcionadas en el request si existen, de lo contrario usar las fechas por defecto
-      $fechaInicio = $request->input('fechaInicio', $defaultFechaInicio);
-      $fechaFin = $request->input('fechaFin', $defaultFechaFin);
-  
-      // Validar que la diferencia entre las fechas no sea mayor a 4 meses
-      $fechaInicioCarbon = Carbon::parse($fechaInicio);
-      $fechaFinCarbon = Carbon::parse($fechaFin);
-  
-      if ($fechaInicioCarbon->diffInMonths($fechaFinCarbon) > 3) {
-          return redirect()->back()->withErrors(['Las Seleccion de fechas no pueden tener una diferencia mayor a 3 meses.']);
-      }
-  
-      // Filtrar los tráficos por las empresas asignadas al usuario autenticado y por los filtros proporcionados
-      $query = Trafico::whereIn('empresa_id', $empresasAsignadasIds)
-                      ->where('statusTrafico', 'CERRADO')
-                      ->whereBetween('fechaReg', [$fechaInicio, $fechaFin]);
-  
-      // Filtrar por empresa seleccionada
-      if ($request->has('empresaSelect') && $request->empresaSelect != '00') {
-          $query->whereHas('empresa', function($q) use ($request) {
-              $q->where('id', $request->empresaSelect);
-          });
-      }
-  
-      // Obtener los tráficos filtrados
-      $traficos = $query->orderBy('fechaReg', 'DESC')->get();
-
-    return view('trafico.indexCerrados', compact('traficos','userEmpresas','fechaInicio','fechaFin', 'request'));
-}
+        
+        $userEmpresas = Empresa::all();
+    
+        // =================================================================================================
+        // CÓDIGO ORIGINAL (comentado):
+        // $empresasAsignadasIds = $userEmpresas->pluck('empresa.id');
+        // =================================================================================================
+    
+        // Definir las fechas por defecto
+        $defaultFechaFin = Carbon::now()->format('Y-m-d');
+        $defaultFechaInicio = Carbon::now()->startOfMonth()->format('Y-m-d');
+    
+        // Usar las fechas proporcionadas en el request si existen, de lo contrario usar las fechas por defecto
+        $fechaInicio = $request->input('fechaInicio', $defaultFechaInicio);
+        $fechaFin = $request->input('fechaFin', $defaultFechaFin);
+    
+        // Validar que la diferencia entre las fechas no sea mayor a 3 meses
+        $fechaInicioCarbon = Carbon::parse($fechaInicio);
+        $fechaFinCarbon = Carbon::parse($fechaFin);
+    
+        if ($fechaInicioCarbon->diffInMonths($fechaFinCarbon) > 3) {
+            return redirect()->back()->withErrors(['Las Seleccion de fechas no pueden tener una diferencia mayor a 3 meses.']);
+        }
+    
+        // =================================================================================================
+        // CÓDIGO ORIGINAL (comentado):
+        //
+        // $query = Trafico::whereIn('empresa_id', $empresasAsignadasIds)
+        //                 ->where('statusTrafico', 'CERRADO')
+        //                 ->whereBetween('fechaReg', [$fechaInicio, $fechaFin]);
+        //
+        // NUEVO: Quitar filtro por empresa, para mostrar todos los tráficos cerrados:
+        // =================================================================================================
+    
+        $query = Trafico::where('statusTrafico', 'CERRADO')
+                        ->whereBetween('fechaReg', [$fechaInicio, $fechaFin]);
+    
+        // Filtrar por empresa seleccionada
+        if ($request->has('empresaSelect') && $request->empresaSelect != '00') {
+            $query->whereHas('empresa', function($q) use ($request) {
+                $q->where('id', $request->empresaSelect);
+            });
+        }
+    
+        // Obtener los tráficos filtrados
+        $traficos = $query->orderBy('fechaReg', 'DESC')->get();
+    
+        return view('trafico.indexCerrados', compact('traficos','userEmpresas','fechaInicio','fechaFin', 'request'));
+    }
+    
 
 
 

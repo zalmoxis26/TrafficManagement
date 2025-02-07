@@ -72,7 +72,7 @@ class RegisterController extends Controller
             ]);
 
             // Obtener el rol "guest"
-            $guestRole = Role::where('name', 'guest')->first();
+            $guestRole = Role::where('name', 'cliente')->first();
 
             // Asignar el rol al usuario si se encuentra
             if ($guestRole) {

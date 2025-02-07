@@ -24,22 +24,27 @@ class RevisioneController extends Controller
      */
     public function index(Request $request): View
     {
-
-        // Obtener el usuario autenticado
-    $user = auth()->user();
-
-    // Obtener los IDs de las empresas asignadas al usuario
-    $empresasAsignadasIds = $user->empresas->pluck('empresa_id');
-
-
-    // Filtrar las revisiones para que solo se incluyan aquellas que pertenezcan a los traficos de las empresas asignadas al usuario
-    $revisiones = Revisione::whereHas('traficos', function ($query) use ($empresasAsignadasIds) {
-        $query->whereIn('empresa_id', $empresasAsignadasIds);
-            })->orderBy('updated_at', 'DESC')
-            ->get();
-
-    return view('revisione.index', compact('revisiones'));
-
+        // =================================================================================================
+        // CÓDIGO ORIGINAL (comentado):
+        //
+        // // Obtener el usuario autenticado
+        // $user = auth()->user();
+        //
+        // // Obtener los IDs de las empresas asignadas al usuario
+        // $empresasAsignadasIds = $user->empresas->pluck('empresa_id');
+        //
+        // // Filtrar las revisiones para que solo se incluyan aquellas 
+        // // que pertenezcan a los traficos de las empresas asignadas
+        // $revisiones = Revisione::whereHas('traficos', function ($query) use ($empresasAsignadasIds) {
+        //     $query->whereIn('empresa_id', $empresasAsignadasIds);
+        // })->orderBy('updated_at', 'DESC')
+        //   ->get();
+        // =================================================================================================
+    
+        // NUEVO: Obtener todas las revisiones sin filtrar por empresas
+        $revisiones = Revisione::orderBy('updated_at', 'DESC')->get();
+    
+        return view('revisione.index', compact('revisiones'));
     }
 
     /**
