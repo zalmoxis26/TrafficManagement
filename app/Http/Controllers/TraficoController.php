@@ -12,6 +12,7 @@ use App\Events\FacturaUpdated;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 use App\Models\UsersEmpresa;
+use App\Models\Empresa;
 use App\Models\Revisione;
 use Carbon\Carbon;
 use App\Models\Anexo;
