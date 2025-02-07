@@ -34,11 +34,12 @@
                         <label for="empresaSelect" class="form-label fs-5 me-1">Empresa:</label>
                         <select class="form-select  me-3" name="empresaSelect" id="empresaSelect" aria-label="Default select example">
                             <option selected value="00">TODAS LAS EMPRESAS</option>
-                                @foreach($userEmpresas as $userEmpresa)
-                                    <option value="{{ $userEmpresa->empresa->id }}" {{ old('empresaSelect', $request->empresaSelect) == $userEmpresa->empresa->id ? 'selected' : '' }}>
-                                        {{ $userEmpresa->empresa->descripcion }}
-                                    </option>
-                                @endforeach 
+                            @foreach($userEmpresas as $empresa)
+                                <option value="{{ $empresa->id }}">
+                                    {{ $empresa->descripcion }}
+                                </option>
+                            @endforeach
+                        
                         </select>
                         <button id="btnBuscar" class="btn btn-md btn-primary" title="Buscar"><i class="bi bi-search"></i></button>
                     </div>
@@ -63,6 +64,7 @@
                 </div>
             </div>
             </div>
+
 
 
         <div class="row">
