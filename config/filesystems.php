@@ -51,9 +51,13 @@ return [
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
             'url' => env('AWS_URL'),
-            'endpoint' => env('AWS_ENDPOINT'),
+            'endpoint' => env('AWS_ENDPOINT'),  // Solo para servicios compatibles con S3 (no AWS)
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
-            'throw' => false,
+            'throw' => false,  // Lanza excepciones en errores (true para desarrollo)
+            'visibility' => 'private',  // o 'public' para acceso directo
+            'options' => [
+                'StorageClass' => 'STANDARD_IA',  # Clase de almacenamiento
+            ],
         ],
 
        
@@ -68,6 +72,17 @@ return [
             'ssl' => false,
             'timeout' => 30,
         ],
+
+
+        'gcs' => [
+        'driver' => 'gcs',
+        'project_id' => env('GOOGLE_CLOUD_PROJECT_ID', 'adp-expediente-pedimentos-sai'),
+        'key_file' => env('GOOGLE_CLOUD_KEY_FILE', null), // Ruta al JSON de credenciales
+        'bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET', 'mi-app-expediente-pedimento-sai'),
+        'path_prefix' => '', // Asegúrate de que está vacío para evitar duplicación
+        'storage_api_uri' => env('GOOGLE_CLOUD_STORAGE_API_URI', null), // Opcional
+    ],
+
 
     ],
 

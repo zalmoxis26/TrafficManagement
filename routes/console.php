@@ -13,3 +13,18 @@ Artisan::command('inspire', function () {
 Artisan::command('schedule:ftp-job', function () {
     Artisan::call('dispatch:ftp-job');
 })->describe('Programa un job FTP para download and store files every minute');
+
+
+// COMANDO PARA PASAR DE FTP A AWS S3
+
+
+Artisan::command('schedule:adp:sai-process-ftp', function () {
+    Artisan::call('dispatch:adp-sai-process-ftp');
+})->describe('Programa un job FTP para respladar en AWS');
+
+
+
+
+
+
+

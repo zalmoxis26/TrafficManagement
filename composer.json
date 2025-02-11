@@ -6,13 +6,20 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "google/cloud-storage": "^1.46",
         "laravel/framework": "^11.0",
         "laravel/pulse": "^1.2",
         "laravel/reverb": "@beta",
         "laravel/tinker": "^2.9",
-        "maatwebsite/excel": "^3.1",
         "laravel/ui": "^4.5",
-        "spatie/laravel-permission": "^6.7"
+        "league/flysystem-ftp": "^3.28",
+        "league/flysystem-google-cloud-storage": "^3.28",
+        "maatwebsite/excel": "^3.1",
+        "mostafaznv/pdf-optimizer": "^1.1",
+        "spatie/flysystem-dropbox": "^3.0",
+        "spatie/laravel-permission": "^6.7",
+        "league/flysystem-aws-s3-v3": "^3.23",
+        "aws/aws-sdk-php": "^3.297"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
