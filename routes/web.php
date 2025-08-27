@@ -8,6 +8,7 @@ use App\Http\Controllers\EmbarqueController;
 use App\Http\Controllers\UsersEmpresaController;
 use App\Http\Controllers\RevisioneController;
 use App\Http\Controllers\AnexoController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PedimentoTxtController;
@@ -19,12 +20,44 @@ use Illuminate\Support\Facades\Storage;
 
 
 
+
+Auth::routes(['verify' => true]); // 👈 habilita /email/verify, etc.   
+
+
+// Form de registro (público)
+Route::post('/register/request', [RegisterController::class, 'store'])
+    ->name('register.request')
+     ->middleware('throttle:20,60'); // 5 intentos por 60 minutos por IP
+
+// Aprobación por admin vía link firmado (no requiere login)
+Route::get('/admin/registration/approve/{token}', [RegisterController::class, 'approve'])
+    ->name('admin.approve')->middleware(['signed'])
+    ->withoutMiddleware(['auth', 'verified', 'verified.approved']);  // ✅ no requiere auth
+
+
+
+Route::post('/admin/registration/{user}/set-role', [RegisterController::class, 'setRole'])
+    ->name('admin.registration.setRole')
+    ->middleware('signed')
+    ->withoutMiddleware(['auth', 'verified', 'verified.approved']);  // ✅ no requiere auth
+
+
+// (Opcional) Rechazar
+Route::get('/admin/registration/reject/{token}', [RegisterController::class, 'reject'])
+    ->name('admin.reject')->middleware('signed');
+
+
+
+Route::middleware(['auth','verified','verified.approved'])->group(function () {
+    // Aquí van las rutas que requieren autenticación y verificación de email y aprobación
+
+
+ 
+
+
 Route::get('/', function () {
     return view('welcome');
 })->name('inicio');
-
-Auth::routes();
-
 
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
@@ -213,10 +246,14 @@ Route::prefix('expediente-pedimento')->group(function () {
     Route::get('/buscar', [AdpPedimentoSaiAwsController::class, 'buscar'])->name('pedimento.buscar');
 
      
-    
-
-
 });
+
+
+
+
+
+});  // fin ruta auth verified approved, aprobacion
+
 
 
 

@@ -12,12 +12,16 @@ return Application::configure(basePath: dirname(__DIR__))
         channels: __DIR__.'/../routes/channels.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware) {
+     ->withMiddleware(function (Middleware $middleware) {
+
+        // Aliases
         $middleware->alias([
-            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
-            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role'               => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission'         => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+            'verified.approved'  => \App\Http\Middleware\EnsureUserIsVerifiedAndApproved::class,
         ]);
+        // Global Middleware
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

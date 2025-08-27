@@ -8,10 +8,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Contracts\Auth\MustVerifyEmail; // la añadimos verificar email
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail // Implementa la interfaz MustVerifyEmail
 {
-    use HasFactory, Notifiable , HasRoles;
+    use HasFactory, Notifiable , HasRoles, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -22,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'approved_at'
     ];
 
     /**
