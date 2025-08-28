@@ -113,8 +113,8 @@ class ProcessFtpFiles implements ShouldQueue
                 // Verificar si ambos archivos (TXT y PDF) están presentes
                 if ($extensions['txt'] && $extensions['pdf']) {
                     // Encontrar el archivo TXT sin importar mayúsculas o minúsculas
-                    $txtFilePath = $this->findFileCaseInsensitive('invoices', $filenameWithoutExtension, 'txt');
-                    $pdfFilePath = $this->findFileCaseInsensitive('invoices', $filenameWithoutExtension, 'pdf');
+                    $txtFilePath = $this->findFileCaseInsensitive($files, $filenameWithoutExtension, 'txt');
+                    $pdfFilePath = $this->findFileCaseInsensitive($files, $filenameWithoutExtension, 'pdf');
     
                     // Verificación adicional de existencia de archivos
                     if (!$txtFilePath) {
@@ -137,9 +137,11 @@ class ProcessFtpFiles implements ShouldQueue
         }
     }
     
-    private function findFileCaseInsensitive($directory, $filenameWithoutExtension, $extension)
+   // Ahora recibe $files ya listados desde processLocalFiles()
+    private function findFileCaseInsensitive($files, $filenameWithoutExtension, $extension)
     {
-        $files = Storage::disk('local')->files($directory);
+
+        
     
         foreach ($files as $file) {
             if (strtolower(pathinfo($file, PATHINFO_FILENAME)) === strtolower($filenameWithoutExtension) &&
