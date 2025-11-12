@@ -24,18 +24,26 @@ use Illuminate\Support\Facades\Storage;
 Auth::routes(['verify' => true]); // 👈 habilita /email/verify, etc.   
 
 
+
+
 // Form de registro (público)
 Route::post('/register/request', [RegisterController::class, 'store'])
     ->name('register.request')
-     ->middleware('throttle:20,60'); // 5 intentos por 60 minutos por IP
+     ->middleware('throttle:10,60'); // 10 intentos por 60 minutos por IP
 
 // Aprobación por admin vía link firmado (no requiere login)
 Route::get('/admin/registration/approve/{token}', [RegisterController::class, 'approve'])
     ->name('admin.approve')->middleware(['signed'])
     ->withoutMiddleware(['auth', 'verified', 'verified.approved']);  // ✅ no requiere auth
 
+    //para enviar correo verificado
+Route::get('/register/verify/{token}', [RegisterController::class, 'verify'])
+    ->name('register.verify')
+    ->middleware('signed')
+    ->withoutMiddleware(['auth', 'verified', 'verified.approved']);  // ✅ no requiere auth
 
 
+// Asignar rol por admin vía link firmado (no requiere login)
 Route::post('/admin/registration/{user}/set-role', [RegisterController::class, 'setRole'])
     ->name('admin.registration.setRole')
     ->middleware('signed')
