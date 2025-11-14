@@ -85,7 +85,7 @@
                         </a>
 <!--SEGUNDO RECUADRO -->
                     <a
-                    href="{{route('traficos.index')}}"
+                    href="{{route('traficoDesdeFactura')}}"
                     class="flex items-center justify-end gap-4 rounded-lg p-6 shadow-[0px_14px_34px_0px_rgba(0,0,0,0.08)] transition duration-300 lg:pb-10 focus:outline-none"
                     style="background-color: #18181b; color: rgba(255, 255, 255, 0.7); box-shadow: 0px 14px 34px 0px rgba(0,0,0,0.08); border: 1px solid rgba(63, 63, 70, 1);"
                    onmouseover="this.style.color='rgba(255, 255, 255, 1)'; this.style.borderColor='rgba(130, 130, 150, 1)';"
