@@ -43,10 +43,10 @@ class ProcessFtpFiles implements ShouldQueue
             $this->procesarArchivosLocales();
             $this->limpiarOrphansViejos();      // Limpia basura vieja en invoices/orphans/
         } catch (\Throwable $e) {
-          /*  Log::error('Error general en ProcessFtpFiles', [
+            Log::error('Error general en ProcessFtpFiles', [
                 'error' => $e->getMessage(),
                 'memory_usage' => memory_get_usage(),
-            ]);  */
+            ]);  
         }
     }
 
