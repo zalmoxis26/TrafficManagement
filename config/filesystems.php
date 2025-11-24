@@ -68,9 +68,10 @@ return [
             'password' => env('FTP_PASSWORD'),
             'port' => (int)env('FTP_PORT', 21),
             'root' => '',
-            'passive' => true,
+            'passive' => false,
             'ssl' => false,
             'timeout' => 30,
+            'ignorePassiveAddress' => true,
         ],
 
 

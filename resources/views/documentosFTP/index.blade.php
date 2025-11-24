@@ -48,6 +48,13 @@
             </div>
         @endif
 
+            
+            @if (!empty($errorMsg))
+    <div class="alert alert-danger">{{ $errorMsg }}</div>
+@endif
+
+
+
         <div class="directory-path">
             Carpeta actual: {{ $directory }}
             @if ($directory != '/')
