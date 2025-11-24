@@ -62,7 +62,11 @@ class ProcessFtpFiles implements ShouldQueue
     /**
      * 1) Descargar .txt/.pdf del FTP a invoices/ y mover SIEMPRE fuera del root.
      */
-  private function descargarArchivosFtp(): void
+  
+
+
+
+private function descargarArchivosFtp(): void
 {
     Log::info('FTP DEBUG: entrando a descargarArchivosFtp()');
 
@@ -323,6 +327,44 @@ class ProcessFtpFiles implements ShouldQueue
 }
 
 
+
+
+    /**
+     * 2) Procesar archivos en invoices/: sólo pares TXT+PDF.
+     */
+
+    private function procesarArchivosLocales(): void
+    {
+        $local   = Storage::disk('local');
+        $archivos = $local->files('invoices');
+
+        if (empty($archivos)) {
+            return;
+        }
+
+        $pares = $this->construirParesArchivos($archivos);
+
+        // Mover huérfanos viejos a /invoices/orphans
+        $this->moverHuerfanosAntiguos($pares);
+
+        $batchSize = 50;
+
+        foreach (array_chunk($pares, $batchSize, true) as $lote) {
+            foreach ($lote as $base => $paths) {
+                if (!isset($paths['txt'], $paths['pdf'])) {
+                    continue;
+                }
+
+                $this->procesarParArchivos($paths['txt'], $paths['pdf']);
+            }
+
+            gc_collect_cycles();
+        }
+    }
+
+
+
+
     /**
      * Construir arreglo [base => ['txt' => ruta, 'pdf' => ruta]]
      */
@@ -348,6 +390,8 @@ class ProcessFtpFiles implements ShouldQueue
         return $pares;
     }
 
+
+    
     /**
      * Mover huérfanos (.txt o .pdf sin su par) viejos a /invoices/orphans
      */
