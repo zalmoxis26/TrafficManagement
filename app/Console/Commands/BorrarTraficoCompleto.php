@@ -31,6 +31,9 @@ class BorrarTraficoCompleto extends Command
 
             Storage::disk('local')->deleteDirectory('public/Facturas');
             Storage::disk('local')->deleteDirectory('public/Anexos');
+            Storage::disk('local')->deleteDirectory('public/Historial');
+            Storage::disk('local')->deleteDirectory('public/Revisiones');
+            Storage::disk('local')->deleteDirectory('public/Pedimentos');
 
             // 2) Borrar relaciones en BD
             $this->info('Borrando datos de tablas relacionadas...');
