@@ -64,8 +64,6 @@ class ProcessFtpFiles implements ShouldQueue
      */
   
 
-
-
 private function descargarArchivosFtp(): void
 {
     Log::info('FTP DEBUG: entrando a descargarArchivosFtp()');
@@ -76,22 +74,25 @@ private function descargarArchivosFtp(): void
     // 1) Intentar listar archivos en root del FTP usando listContents (igual que en tu controller)
     try {
         Log::info('FTP DEBUG: intentando listContents("/")');
-        $contents = $ftp->listContents('/', false);
 
-        Log::info('FTP DEBUG: listContents("/") OK', [
-            'total' => count($contents),
-            // Ojo: esto puede ser muy largo, pero útil 1–2 veces para depurar
-            'lista' => $contents,
-        ]);
+        // DirectoryListing (Flysystem v3)
+        $listing = $ftp->listContents('/', false);
 
-        // Filtramos solo archivos y armamos un arreglo de rutas tipo string, como antes
         $archivos = [];
-        foreach ($contents as $item) {
-            if (($item['type'] ?? null) === 'file') {
-                // path es el que usa Storage internamente, ej: "FACT001.TXT"
-                $archivos[] = $item['path'];
+
+        foreach ($listing as $item) {
+            $type = $item['type'] ?? null;
+            $path = $item['path'] ?? null;
+
+            if ($type === 'file' && $path) {
+                $archivos[] = $path;
             }
         }
+
+        Log::info('FTP DEBUG: listContents("/") OK', [
+            'total_archivos' => count($archivos),
+            'paths'          => $archivos,
+        ]);
 
     } catch (\Throwable $e) {
         Log::error('FTP DEBUG: error al listar archivos en root con listContents("/")', [
@@ -130,10 +131,7 @@ private function descargarArchivosFtp(): void
                 'ruta_local' => $rutaLocal,
             ]);
 
-            /**
-             * 1) Archivos NO válidos (.txt/.pdf)
-             * Se mandan directo a /other para que no estorben.
-             */
+            // 1) NO válidos → /other
             if (!in_array($ext, ['txt', 'pdf'])) {
                 $destinoOther = 'other/' . $nombre;
 
@@ -184,15 +182,10 @@ private function descargarArchivosFtp(): void
                     ]);
                 }
 
-                continue; // siguiente archivo
+                continue;
             }
 
-            /**
-             * 2) Archivos VÁLIDOS (.txt/.pdf)
-             * Siempre se descargan a /invoices (sobrescribiendo).
-             */
-
-            // Abrir stream desde FTP
+            // 2) Válidos (.txt/.pdf) → descargar a invoices/
             $stream = null;
             try {
                 $stream = $ftp->readStream($rutaFtp);
@@ -210,10 +203,8 @@ private function descargarArchivosFtp(): void
                 continue;
             }
 
-            // Asegurar carpeta local invoices
             $local->makeDirectory('invoices');
 
-            // Si ya existe en invoices, eliminar para sobrescribir limpio
             if ($local->exists($rutaLocal)) {
                 Log::info('FTP DEBUG: eliminando archivo previo en invoices para sobrescribir', [
                     'ruta_local' => $rutaLocal,
@@ -221,7 +212,6 @@ private function descargarArchivosFtp(): void
                 $local->delete($rutaLocal);
             }
 
-            // Escribir archivo en invoices usando streaming
             $okWrite = $local->writeStream($rutaLocal, $stream);
 
             if (is_resource($stream)) {
@@ -241,9 +231,7 @@ private function descargarArchivosFtp(): void
                 'ruta_ftp'   => $rutaFtp,
             ]);
 
-            /**
-             * 3) Mover SIEMPRE el original del FTP a /procesados
-             */
+            // 3) Mover siempre a /procesados
             $destinoProc = 'procesados/' . $nombre;
 
             try {
@@ -329,6 +317,12 @@ private function descargarArchivosFtp(): void
 
 
 
+
+
+
+
+
+
     /**
      * 2) Procesar archivos en invoices/: sólo pares TXT+PDF.
      */
@@ -391,7 +385,7 @@ private function descargarArchivosFtp(): void
     }
 
 
-    
+
     /**
      * Mover huérfanos (.txt o .pdf sin su par) viejos a /invoices/orphans
      */
