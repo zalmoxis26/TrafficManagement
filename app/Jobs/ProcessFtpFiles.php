@@ -1142,7 +1142,7 @@ private function procesarParArchivos(string $rutaTxtRel, string $rutaPdfRel): vo
     private function enviarFacturaPorCorreoPrueba(Trafico $trafico): void
 {
     try {
-        Mail::to('osvaldo@gmail.com')
+        Mail::to('osvaldo@rentasgmp.com')
             ->queue(new FacturaMail($trafico));
 
     } catch (\Throwable $e) {
