@@ -3,6 +3,10 @@
 @section('template_title')
     Empresas
 @endsection
+<!--PARA QUE EL TEXTO NO SE SALGA DEL INPUT-->
+
+
+
 
 @section('content')
     <div class="container-fluid">
@@ -44,24 +48,24 @@
                             <table class="table table-striped table-hover text-center p-2" id="table-empresas">
                                 <thead class="thead table-dark">
                                     <tr>        
-                                        <th>Clave Prov</th>
+                                        
                                         <th class="text-center">Proveedor</th>
                                         <th>Clave Cli</th>
                                         <th class="text-center">Nombre Cliente</th>
                                         <th class="text-center" title="Prefijo de la Factura">Prefijo</th>    
-                                        <th class="text-center">RFC</th>
+                                        <th class="text-center">Correo Notificacion</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($empresas as $empresa)
                                         <tr>
-                                            <td>{{$empresa->claveProveedor}} </td> 
+                                           
                                             <td class="text-center">{{ $empresa->descripcion }}</td>    
                                             <td >{{ $empresa->clave }}</td>
                                             <td class="text-center">{{ $empresa->empresaMatriz }}</td>   
                                             <td class="text-center">{{ $empresa->prefijoFactura }}</td>
-                                            <td >{{ $empresa->rfc }}</td>
+                                            <td>{{ \Illuminate\Support\Str::limit($empresa->emailNotify, 23, '...') }}</td>
                                             <td>
                                                 <form action="{{ route('empresas.destroy', $empresa->id) }}" method="POST">
                                                     <a class="btn btn-sm btn-success" href="{{ route('empresas.edit', $empresa->id) }}"><i class="bi bi-pen"></i> {{ __('Edit') }}</a>
@@ -76,6 +80,7 @@
                             </table>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>

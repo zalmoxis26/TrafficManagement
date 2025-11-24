@@ -22,12 +22,13 @@ class EmpresaRequest extends FormRequest
     public function rules(): array
     {
         return [
-			'clave' => 'required|string',
+			'clave' => 'required|string|nullable',
 			'descripcion' => 'required|string',
             'empresaMatriz' => 'required|string',
-            'rfc' => 'string|',
-            'claveProveedor' => 'string|',
-            'prefijoFactura' => 'string|',
+            'rfc' => 'string|nullable',
+            'claveProveedor' => 'string|nullable',
+            'prefijoFactura' => 'string|nullable',
+             'emailNotify'    => ['nullable','string'],    
             
         ];
     }

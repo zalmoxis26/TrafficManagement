@@ -28,7 +28,7 @@ class Empresa extends Model
      *
      * @var array<int, string>
      */
-    protected $fillable = ['clave', 'descripcion', 'rfc','empresaMatriz', 'claveProveedor', 'prefijoFactura'];
+    protected $fillable = ['clave', 'descripcion', 'rfc','empresaMatriz', 'claveProveedor', 'prefijoFactura', 'emailNotify'];
 
 
     /**
