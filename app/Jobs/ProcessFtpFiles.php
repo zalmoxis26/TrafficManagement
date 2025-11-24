@@ -62,34 +62,46 @@ class ProcessFtpFiles implements ShouldQueue
     /**
      * 1) Descargar .txt/.pdf del FTP a invoices/ y mover SIEMPRE fuera del root.
      */
-   private function descargarArchivosFtp(): void
+  private function descargarArchivosFtp(): void
 {
     Log::info('FTP DEBUG: entrando a descargarArchivosFtp()');
 
     $ftp   = Storage::disk('ftp');
     $local = Storage::disk('local');
 
-    // Intentar listar archivos en root del FTP
+    // 1) Intentar listar archivos en root del FTP usando listContents (igual que en tu controller)
     try {
-        $archivos = $ftp->files('/');
+        Log::info('FTP DEBUG: intentando listContents("/")');
+        $contents = $ftp->listContents('/', false);
 
-        Log::info('FTP DEBUG: archivos encontrados en root', [
-            'total' => count($archivos),
-            'lista' => $archivos,
+        Log::info('FTP DEBUG: listContents("/") OK', [
+            'total' => count($contents),
+            // Ojo: esto puede ser muy largo, pero útil 1–2 veces para depurar
+            'lista' => $contents,
         ]);
+
+        // Filtramos solo archivos y armamos un arreglo de rutas tipo string, como antes
+        $archivos = [];
+        foreach ($contents as $item) {
+            if (($item['type'] ?? null) === 'file') {
+                // path es el que usa Storage internamente, ej: "FACT001.TXT"
+                $archivos[] = $item['path'];
+            }
+        }
+
     } catch (\Throwable $e) {
-        Log::error('FTP DEBUG: error al listar archivos en root', [
+        Log::error('FTP DEBUG: error al listar archivos en root con listContents("/")', [
             'error' => $e->getMessage(),
         ]);
         return;
     }
 
     if (empty($archivos)) {
-        Log::info('FTP DEBUG: no hay archivos en root para procesar');
+        Log::info('FTP DEBUG: no hay archivos en root para procesar (después de listContents)');
         return;
     }
 
-    // Asegurar carpetas en FTP (si ya existen, no pasa nada)
+    // 2) Asegurar carpetas en FTP (si ya existen, no pasa nada)
     try {
         $ftp->makeDirectory('procesados');
         $ftp->makeDirectory('other');
@@ -108,9 +120,9 @@ class ProcessFtpFiles implements ShouldQueue
             $rutaLocal = 'invoices/' . $nombre;
 
             Log::info('FTP DEBUG: procesando archivo', [
-                'ruta_ftp' => $rutaFtp,
-                'nombre'   => $nombre,
-                'ext'      => $ext,
+                'ruta_ftp'   => $rutaFtp,
+                'nombre'     => $nombre,
+                'ext'        => $ext,
                 'ruta_local' => $rutaLocal,
             ]);
 
@@ -168,7 +180,7 @@ class ProcessFtpFiles implements ShouldQueue
                     ]);
                 }
 
-                continue; // saltamos a siguiente archivo
+                continue; // siguiente archivo
             }
 
             /**
@@ -249,25 +261,19 @@ class ProcessFtpFiles implements ShouldQueue
 
                     try {
                         $destinoExiste = $ftp->exists($destinoProc);
-                    } catch (\Throwable $e) {
-                        // algunos drivers FTP no soportan exists bien; ignoramos error
-                    }
+                    } catch (\Throwable $e) {}
 
                     try {
                         $origenExiste = $ftp->exists($rutaFtp);
-                    } catch (\Throwable $e) {
-                        // ignoramos error también
-                    }
+                    } catch (\Throwable $e) {}
 
                     if ($destinoExiste && $origenExiste) {
-                        // Ya hay copia en procesados -> eliminamos root para no reprocesar
                         $ftp->delete($rutaFtp);
                         Log::info('FTP DEBUG: archivo ya existía en /procesados, se elimina el original en root', [
                             'desde' => $rutaFtp,
                             'hacia' => $destinoProc,
                         ]);
                     } elseif ($origenExiste && !$destinoExiste) {
-                        // Fallback: copy + delete manual
                         $fallbackStream = $ftp->readStream($rutaFtp);
                         if ($fallbackStream) {
                             $write = $ftp->writeStream($destinoProc, $fallbackStream);
@@ -293,7 +299,6 @@ class ProcessFtpFiles implements ShouldQueue
                             ]);
                         }
                     } else {
-                        // Ni origen ni destino visibles: lo logueamos para inspección
                         Log::warning('FTP DEBUG: estado inconsistente tras fallo de move(), revisar manualmente', [
                             'desde'          => $rutaFtp,
                             'hacia'          => $destinoProc,
@@ -317,40 +322,6 @@ class ProcessFtpFiles implements ShouldQueue
     Log::info('FTP DEBUG: descarga y movimientos completados para todos los archivos del root');
 }
 
-
-
-    /**
-     * 2) Procesar archivos en invoices/: sólo pares TXT+PDF.
-     */
-
-    private function procesarArchivosLocales(): void
-    {
-        $local   = Storage::disk('local');
-        $archivos = $local->files('invoices');
-
-        if (empty($archivos)) {
-            return;
-        }
-
-        $pares = $this->construirParesArchivos($archivos);
-
-        // Mover huérfanos viejos a /invoices/orphans
-        $this->moverHuerfanosAntiguos($pares);
-
-        $batchSize = 50;
-
-        foreach (array_chunk($pares, $batchSize, true) as $lote) {
-            foreach ($lote as $base => $paths) {
-                if (!isset($paths['txt'], $paths['pdf'])) {
-                    continue;
-                }
-
-                $this->procesarParArchivos($paths['txt'], $paths['pdf']);
-            }
-
-            gc_collect_cycles();
-        }
-    }
 
     /**
      * Construir arreglo [base => ['txt' => ruta, 'pdf' => ruta]]
