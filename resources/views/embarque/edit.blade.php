@@ -53,7 +53,7 @@
                     
                     @foreach($traficos as $trafico)
                     <tr>
-                        <td>{{ $trafico->id }}</td>
+                        <td>{{ $trafico->factura }}</td>
                         <td>{{ $trafico->fechaReg }}</td>
                         <td><a href="{{ route('traficos.show', $trafico->id) }}" class="btn btn-primary">Ver Anexos</a></td>
                     </tr>
