@@ -37,272 +37,286 @@ class ProcessFtpFiles implements ShouldQueue
     }
 
     public function handle(): void
-    {
-        try {
-            $this->descargarArchivosFtp();
-            $this->procesarArchivosLocales();
-            $this->limpiarOrphansViejos();      // Limpia basura vieja en invoices/orphans/
-        } catch (\Throwable $e) {
-            Log::error('Error general en ProcessFtpFiles', [
-                'error' => $e->getMessage(),
-                'memory_usage' => memory_get_usage(),
-            ]);  
-        }
+{
+    Log::info('ProcessFtpFiles: INICIO handle()');
+
+    try {
+        $this->descargarArchivosFtp();
+        $this->procesarArchivosLocales();
+        $this->limpiarOrphansViejos();      // Limpia basura vieja en invoices/orphans/
+
+        Log::info('ProcessFtpFiles: FIN handle() sin excepciones');
+    } catch (\Throwable $e) {
+        Log::error('Error general en ProcessFtpFiles', [
+            'error'        => $e->getMessage(),
+            'trace'        => $e->getTraceAsString(),
+            'memory_usage' => memory_get_usage(),
+        ]);
+
+        // MUY IMPORTANTE: relanzar para que el job quede como "failed"
+        throw $e;
     }
+}
+
 
     /**
      * 1) Descargar .txt/.pdf del FTP a invoices/ y mover SIEMPRE fuera del root.
      */
-    private function descargarArchivosFtp(): void
-    {
-        $ftp   = Storage::disk('ftp');
-        $local = Storage::disk('local');
+   private function descargarArchivosFtp(): void
+{
+    Log::info('FTP DEBUG: entrando a descargarArchivosFtp()');
 
-        // Intentar listar archivos en root del FTP
-        try {
-            $archivos = $ftp->files('/');
-         /*   Log::info('FTP: archivos encontrados en root', [
-                'total' => count($archivos),
-                'lista' => $archivos,
-            ]); */
-        } catch (\Throwable $e) {
-           /* Log::error('FTP: error al listar archivos en root', [
-                'error' => $e->getMessage(),
-            ]);*/
-            return;
-        }
+    $ftp   = Storage::disk('ftp');
+    $local = Storage::disk('local');
 
-        if (empty($archivos)) {
-           // Log::info('FTP: no hay archivos en root para procesar');
-            return;
-        }
+    // Intentar listar archivos en root del FTP
+    try {
+        $archivos = $ftp->files('/');
 
-        // Asegurar carpetas en FTP (si ya existen, no pasa nada)
-        try {
-            $ftp->makeDirectory('procesados');
-            $ftp->makeDirectory('other');
-        } catch (\Throwable $e) {
-           /* Log::warning('FTP: no se pudieron asegurar directorios procesados/other', [
-                'error' => $e->getMessage(),
-            ]);*/
-        }
+        Log::info('FTP DEBUG: archivos encontrados en root', [
+            'total' => count($archivos),
+            'lista' => $archivos,
+        ]);
+    } catch (\Throwable $e) {
+        Log::error('FTP DEBUG: error al listar archivos en root', [
+            'error' => $e->getMessage(),
+        ]);
+        return;
+    }
 
-        $batchSize = 50;
+    if (empty($archivos)) {
+        Log::info('FTP DEBUG: no hay archivos en root para procesar');
+        return;
+    }
 
-        foreach (array_chunk($archivos, $batchSize) as $lote) {
-            foreach ($lote as $rutaFtp) {
-                $nombre    = basename($rutaFtp);
-                $ext       = strtolower(pathinfo($nombre, PATHINFO_EXTENSION));
-                $rutaLocal = 'invoices/' . $nombre;
+    // Asegurar carpetas en FTP (si ya existen, no pasa nada)
+    try {
+        $ftp->makeDirectory('procesados');
+        $ftp->makeDirectory('other');
+    } catch (\Throwable $e) {
+        Log::warning('FTP DEBUG: no se pudieron asegurar directorios procesados/other', [
+            'error' => $e->getMessage(),
+        ]);
+    }
 
-              /*  Log::info('FTP: procesando archivo', [
-                    'ruta_ftp' => $rutaFtp,
-                    'nombre'   => $nombre,
-                    'ext'      => $ext,
-                ]);*/
+    $batchSize = 50;
 
-                /**
-                 * 1) Archivos NO válidos (.txt/.pdf)
-                 * Se mandan directo a /other para que no estorben.
-                 */
-                if (!in_array($ext, ['txt', 'pdf'])) {
-                    $destinoOther = 'other/' . $nombre;
+    foreach (array_chunk($archivos, $batchSize) as $lote) {
+        foreach ($lote as $rutaFtp) {
+            $nombre    = basename($rutaFtp);
+            $ext       = strtolower(pathinfo($nombre, PATHINFO_EXTENSION));
+            $rutaLocal = 'invoices/' . $nombre;
 
-                    try {
-                        $okMove = $ftp->move($rutaFtp, $destinoOther);
+            Log::info('FTP DEBUG: procesando archivo', [
+                'ruta_ftp' => $rutaFtp,
+                'nombre'   => $nombre,
+                'ext'      => $ext,
+                'ruta_local' => $rutaLocal,
+            ]);
 
-                        if ($okMove) {
-                           /* Log::info('FTP: archivo no válido movido a /other', [
-                                'desde' => $rutaFtp,
-                                'hacia' => $destinoOther,
-                            ]);*/
-                        } else {
-                           /* Log::warning('FTP: move() false al mover archivo no válido a /other, probando fallback', [
-                                'desde' => $rutaFtp,
-                                'hacia' => $destinoOther,
-                            ]);*/
-
-                            $stream = $ftp->readStream($rutaFtp);
-                            if ($stream) {
-                                $write = $ftp->writeStream($destinoOther, $stream);
-                                if (is_resource($stream)) {
-                                    fclose($stream);
-                                }
-
-                                if ($write) {
-                                    $ftp->delete($rutaFtp);
-                                 /*   Log::info('FTP: archivo no válido copiado a /other y origen eliminado (fallback)', [
-                                        'desde' => $rutaFtp,
-                                        'hacia' => $destinoOther,
-                                    ]);*/
-                                } else {
-                                  /*  Log::error('FTP: fallo writeStream en fallback /other, archivo queda en root', [
-                                        'desde' => $rutaFtp,
-                                        'hacia' => $destinoOther,
-                                    ]);*/
-                                }
-                            } else {
-                               /* Log::error('FTP: fallo readStream en fallback /other, archivo queda en root', [
-                                    'desde' => $rutaFtp,
-                                ]);*/
-                            }
-                        }
-                    } catch (\Throwable $e) {
-                      /*  Log::error('FTP: excepción al mover archivo no válido a /other', [
-                            'desde' => $rutaFtp,
-                            'hacia' => $destinoOther,
-                            'error' => $e->getMessage(),
-                        ]);*/
-                    }
-
-                    continue; // saltamos a siguiente archivo
-                }
-
-                /**
-                 * 2) Archivos VÁLIDOS (.txt/.pdf)
-                 * Siempre se descargan a /invoices (sobrescribiendo).
-                 */
-
-                // Abrir stream desde FTP
-                $stream = null;
-                try {
-                    $stream = $ftp->readStream($rutaFtp);
-                } catch (\Throwable $e) {
-                  /*  Log::error('FTP: excepción en readStream para archivo válido', [
-                        'ruta_ftp' => $rutaFtp,
-                        'error'    => $e->getMessage(),
-                    ]);*/
-                }
-
-                if ($stream === false || $stream === null) {
-                    /*Log::error('FTP: no se pudo abrir stream para archivo válido', [
-                        'ruta_ftp' => $rutaFtp,
-                    ]);*/
-                    continue;
-                }
-
-                // Asegurar carpeta local invoices
-                $local->makeDirectory('invoices');
-
-                // Si ya existe en invoices, eliminar para sobrescribir limpio
-                if ($local->exists($rutaLocal)) {
-                 /*   Log::info('LOCAL: eliminando archivo previo en invoices para sobrescribir', [
-                        'ruta_local' => $rutaLocal,
-                    ]);*/
-                    $local->delete($rutaLocal);
-                }
-
-                // Escribir archivo en invoices usando streaming
-                $okWrite = $local->writeStream($rutaLocal, $stream);
-
-                if (is_resource($stream)) {
-                    fclose($stream);
-                }
-
-                if (!$okWrite) {
-                    /*Log::error('LOCAL: fallo al escribir archivo en invoices', [
-                        'ruta_local' => $rutaLocal,
-                        'ruta_ftp'   => $rutaFtp,
-                    ]);*/
-                    continue;
-                }
-
-                /*Log::info('LOCAL: archivo descargado correctamente a invoices', [
-                    'ruta_local' => $rutaLocal,
-                    'ruta_ftp'   => $rutaFtp,
-                ]);*/
-
-                /**
-                 * 3) Mover SIEMPRE el original del FTP a /procesados
-                 */
-                $destinoProc = 'procesados/' . $nombre;
+            /**
+             * 1) Archivos NO válidos (.txt/.pdf)
+             * Se mandan directo a /other para que no estorben.
+             */
+            if (!in_array($ext, ['txt', 'pdf'])) {
+                $destinoOther = 'other/' . $nombre;
 
                 try {
-                    $okMove = $ftp->move($rutaFtp, $destinoProc);
+                    $okMove = $ftp->move($rutaFtp, $destinoOther);
 
                     if ($okMove) {
-                        /*Log::info('FTP: archivo movido a /procesados después de descargar', [
+                        Log::info('FTP DEBUG: archivo no válido movido a /other', [
                             'desde' => $rutaFtp,
-                            'hacia' => $destinoProc,
-                        ]);*/
+                            'hacia' => $destinoOther,
+                        ]);
                     } else {
-                        /*Log::warning('FTP: move() retornó false al mover archivo procesado, revisando estado', [
+                        Log::warning('FTP DEBUG: move() false al mover archivo no válido a /other, probando fallback', [
                             'desde' => $rutaFtp,
-                            'hacia' => $destinoProc,
-                        ]);*/
+                            'hacia' => $destinoOther,
+                        ]);
 
-                        $destinoExiste = false;
-                        $origenExiste  = false;
+                        $stream = $ftp->readStream($rutaFtp);
+                        if ($stream) {
+                            $write = $ftp->writeStream($destinoOther, $stream);
+                            if (is_resource($stream)) {
+                                fclose($stream);
+                            }
 
-                        try {
-                            $destinoExiste = $ftp->exists($destinoProc);
-                        } catch (\Throwable $e) {
-                            // algunos drivers FTP no soportan exists bien; ignoramos error
-                        }
-
-                        try {
-                            $origenExiste = $ftp->exists($rutaFtp);
-                        } catch (\Throwable $e) {
-                            // ignoramos error también
-                        }
-
-                        if ($destinoExiste && $origenExiste) {
-                            // Ya hay copia en procesados -> eliminamos root para no reprocesar
-                            $ftp->delete($rutaFtp);
-                            /*Log::info('FTP: archivo ya existía en /procesados, se elimina el original en root', [
-                                'desde' => $rutaFtp,
-                                'hacia' => $destinoProc,
-                            ]);*/
-                        } elseif ($origenExiste && !$destinoExiste) {
-                            // Fallback: copy + delete manual
-                            $fallbackStream = $ftp->readStream($rutaFtp);
-                            if ($fallbackStream) {
-                                $write = $ftp->writeStream($destinoProc, $fallbackStream);
-                                if (is_resource($fallbackStream)) {
-                                    fclose($fallbackStream);
-                                }
-
-                                if ($write) {
-                                    $ftp->delete($rutaFtp);
-                                    /*Log::info('FTP: archivo copiado a /procesados y origen eliminado (fallback)', [
-                                        'desde' => $rutaFtp,
-                                        'hacia' => $destinoProc,
-                                    ]);*/
-                                } else {
-                                    /*Log::error('FTP: fallo writeStream en fallback /procesados, archivo queda en root', [
-                                        'desde' => $rutaFtp,
-                                        'hacia' => $destinoProc,
-                                    ]);*/
-                                }
-                            } else {
-                                /*Log::error('FTP: fallo readStream en fallback /procesados, archivo queda en root', [
+                            if ($write) {
+                                $ftp->delete($rutaFtp);
+                                Log::info('FTP DEBUG: archivo no válido copiado a /other y origen eliminado (fallback)', [
                                     'desde' => $rutaFtp,
-                                ]);*/
+                                    'hacia' => $destinoOther,
+                                ]);
+                            } else {
+                                Log::error('FTP DEBUG: fallo writeStream en fallback /other, archivo queda en root', [
+                                    'desde' => $rutaFtp,
+                                    'hacia' => $destinoOther,
+                                ]);
                             }
                         } else {
-                            // Ni origen ni destino visibles: lo logueamos para inspección
-                            /*Log::warning('FTP: estado inconsistente tras fallo de move(), revisar manualmente', [
-                                'desde'          => $rutaFtp,
-                                'hacia'          => $destinoProc,
-                                'origen_existe'  => $origenExiste,
-                                'destino_existe' => $destinoExiste,
-                            ]);*/
+                            Log::error('FTP DEBUG: fallo readStream en fallback /other, archivo queda en root', [
+                                'desde' => $rutaFtp,
+                            ]);
                         }
                     }
                 } catch (\Throwable $e) {
-                    /*Log::error('FTP: excepción al mover archivo a /procesados', [
+                    Log::error('FTP DEBUG: excepción al mover archivo no válido a /other', [
                         'desde' => $rutaFtp,
-                        'hacia' => $destinoProc,
+                        'hacia' => $destinoOther,
                         'error' => $e->getMessage(),
-                    ]);*/
+                    ]);
                 }
+
+                continue; // saltamos a siguiente archivo
             }
 
-            gc_collect_cycles();
+            /**
+             * 2) Archivos VÁLIDOS (.txt/.pdf)
+             * Siempre se descargan a /invoices (sobrescribiendo).
+             */
+
+            // Abrir stream desde FTP
+            $stream = null;
+            try {
+                $stream = $ftp->readStream($rutaFtp);
+            } catch (\Throwable $e) {
+                Log::error('FTP DEBUG: excepción en readStream para archivo válido', [
+                    'ruta_ftp' => $rutaFtp,
+                    'error'    => $e->getMessage(),
+                ]);
+            }
+
+            if ($stream === false || $stream === null) {
+                Log::error('FTP DEBUG: no se pudo abrir stream para archivo válido', [
+                    'ruta_ftp' => $rutaFtp,
+                ]);
+                continue;
+            }
+
+            // Asegurar carpeta local invoices
+            $local->makeDirectory('invoices');
+
+            // Si ya existe en invoices, eliminar para sobrescribir limpio
+            if ($local->exists($rutaLocal)) {
+                Log::info('FTP DEBUG: eliminando archivo previo en invoices para sobrescribir', [
+                    'ruta_local' => $rutaLocal,
+                ]);
+                $local->delete($rutaLocal);
+            }
+
+            // Escribir archivo en invoices usando streaming
+            $okWrite = $local->writeStream($rutaLocal, $stream);
+
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+
+            if (!$okWrite) {
+                Log::error('FTP DEBUG: fallo al escribir archivo en invoices', [
+                    'ruta_local' => $rutaLocal,
+                    'ruta_ftp'   => $rutaFtp,
+                ]);
+                continue;
+            }
+
+            Log::info('FTP DEBUG: archivo descargado correctamente a invoices', [
+                'ruta_local' => $rutaLocal,
+                'ruta_ftp'   => $rutaFtp,
+            ]);
+
+            /**
+             * 3) Mover SIEMPRE el original del FTP a /procesados
+             */
+            $destinoProc = 'procesados/' . $nombre;
+
+            try {
+                $okMove = $ftp->move($rutaFtp, $destinoProc);
+
+                if ($okMove) {
+                    Log::info('FTP DEBUG: archivo movido a /procesados después de descargar', [
+                        'desde' => $rutaFtp,
+                        'hacia' => $destinoProc,
+                    ]);
+                } else {
+                    Log::warning('FTP DEBUG: move() retornó false al mover archivo procesado, revisando estado', [
+                        'desde' => $rutaFtp,
+                        'hacia' => $destinoProc,
+                    ]);
+
+                    $destinoExiste = false;
+                    $origenExiste  = false;
+
+                    try {
+                        $destinoExiste = $ftp->exists($destinoProc);
+                    } catch (\Throwable $e) {
+                        // algunos drivers FTP no soportan exists bien; ignoramos error
+                    }
+
+                    try {
+                        $origenExiste = $ftp->exists($rutaFtp);
+                    } catch (\Throwable $e) {
+                        // ignoramos error también
+                    }
+
+                    if ($destinoExiste && $origenExiste) {
+                        // Ya hay copia en procesados -> eliminamos root para no reprocesar
+                        $ftp->delete($rutaFtp);
+                        Log::info('FTP DEBUG: archivo ya existía en /procesados, se elimina el original en root', [
+                            'desde' => $rutaFtp,
+                            'hacia' => $destinoProc,
+                        ]);
+                    } elseif ($origenExiste && !$destinoExiste) {
+                        // Fallback: copy + delete manual
+                        $fallbackStream = $ftp->readStream($rutaFtp);
+                        if ($fallbackStream) {
+                            $write = $ftp->writeStream($destinoProc, $fallbackStream);
+                            if (is_resource($fallbackStream)) {
+                                fclose($fallbackStream);
+                            }
+
+                            if ($write) {
+                                $ftp->delete($rutaFtp);
+                                Log::info('FTP DEBUG: archivo copiado a /procesados y origen eliminado (fallback)', [
+                                    'desde' => $rutaFtp,
+                                    'hacia' => $destinoProc,
+                                ]);
+                            } else {
+                                Log::error('FTP DEBUG: fallo writeStream en fallback /procesados, archivo queda en root', [
+                                    'desde' => $rutaFtp,
+                                    'hacia' => $destinoProc,
+                                ]);
+                            }
+                        } else {
+                            Log::error('FTP DEBUG: fallo readStream en fallback /procesados, archivo queda en root', [
+                                'desde' => $rutaFtp,
+                            ]);
+                        }
+                    } else {
+                        // Ni origen ni destino visibles: lo logueamos para inspección
+                        Log::warning('FTP DEBUG: estado inconsistente tras fallo de move(), revisar manualmente', [
+                            'desde'          => $rutaFtp,
+                            'hacia'          => $destinoProc,
+                            'origen_existe'  => $origenExiste,
+                            'destino_existe' => $destinoExiste,
+                        ]);
+                    }
+                }
+            } catch (\Throwable $e) {
+                Log::error('FTP DEBUG: excepción al mover archivo a /procesados', [
+                    'desde' => $rutaFtp,
+                    'hacia' => $destinoProc,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
-        /*Log::info('FTP: descarga y movimientos completados para todos los archivos del root');*/
+        gc_collect_cycles();
     }
+
+    Log::info('FTP DEBUG: descarga y movimientos completados para todos los archivos del root');
+}
+
 
 
     /**
