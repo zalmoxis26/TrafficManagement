@@ -85,7 +85,7 @@
                                             $dirName = $pathInfo['dirname'] ?? ''; // e.g., '/ruta/a/la/carpeta'
                                             
                                             // 1. Construir el nombre y la ruta del archivo TXT
-                                            $txtFileName = $baseName . '.txt';
+                                            $txtFileName = $baseName . '.TXT';
                                             // La ruta completa relativa a 'storage'
                                             $txtAdjunto = $dirName . '/' . $txtFileName;
                                             
