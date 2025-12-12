@@ -72,7 +72,7 @@
                                 </thead>
                                 <tbody>
 
-                                    {{-- INICIO DEL CÓDIGO AÑADIDO: Fila para el archivo TXT de la factura --}}
+                                   {{-- INICIO DEL CÓDIGO AÑADIDO: Fila para el archivo TXT de la factura --}}
                                     @php
                                         $facturaAdjunto = $trafico->adjuntoFactura ?? null;
                                         $txtAdjunto = null;
@@ -93,21 +93,20 @@
                                             $txtAdjunto = str_replace('//', '/', $txtAdjunto);
                                         }
                                     @endphp
-                                    
+
                                     @if ($txtAdjunto && $baseName)
                                         <tr>
                                             <td class="text-center">TXT FACTURA</td>
                                             <td>
-                                                {{-- Se genera la URL usando la función url() y la ruta relativa a storage --}}
-                                                <a href="{{ url('storage') . $txtAdjunto }}" target="_blank">{{ $txtFileName }}</a>
+                                                {{-- SE HA AÑADIDO EL ATRIBUTO 'download="{{ $txtFileName }}"' --}}
+                                                <a href="{{ url('storage') . $txtAdjunto }}" download="{{ $txtFileName }}" >{{ $txtFileName }}</a>
                                             </td>
                                             <td class="descripcion">Archivo de texto asociado a la factura.</td>
                                             <td class="text-center">-</td> 
                                             <td class="text-center"></td> 
                                         </tr>
                                     @endif
-                                    {{-- FIN DEL CÓDIGO AÑADIDO --}}   
-
+                                    {{-- FIN DEL CÓDIGO AÑADIDO --}}
 
                                     @foreach($trafico->anexos as $anexo)
                                         <tr>
