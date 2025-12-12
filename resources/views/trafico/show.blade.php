@@ -71,6 +71,44 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+
+                                    {{-- INICIO DEL CÓDIGO AÑADIDO: Fila para el archivo TXT de la factura --}}
+                                    @php
+                                        $facturaAdjunto = $trafico->adjuntoFactura ?? null;
+                                        $txtAdjunto = null;
+                                        $txtFileName = null;
+                                        
+                                        if ($facturaAdjunto) {
+                                            // Usamos pathinfo para obtener la ruta del directorio y el nombre base
+                                            $pathInfo = pathinfo($facturaAdjunto);
+                                            $baseName = $pathInfo['filename'] ?? ''; // e.g., 'nombre_factura'
+                                            $dirName = $pathInfo['dirname'] ?? ''; // e.g., '/ruta/a/la/carpeta'
+                                            
+                                            // 1. Construir el nombre y la ruta del archivo TXT
+                                            $txtFileName = $baseName . '.txt';
+                                            // La ruta completa relativa a 'storage'
+                                            $txtAdjunto = $dirName . '/' . $txtFileName;
+                                            
+                                            // Aseguramos que la ruta no empiece con un doble slash si dirName está vacío
+                                            $txtAdjunto = str_replace('//', '/', $txtAdjunto);
+                                        }
+                                    @endphp
+                                    
+                                    @if ($txtAdjunto && $baseName)
+                                        <tr>
+                                            <td class="text-center">TXT FACTURA</td>
+                                            <td>
+                                                {{-- Se genera la URL usando la función url() y la ruta relativa a storage --}}
+                                                <a href="{{ url('storage') . $txtAdjunto }}" target="_blank">{{ $txtFileName }}</a>
+                                            </td>
+                                            <td class="descripcion">Archivo de texto asociado a la factura.</td>
+                                            <td class="text-center">-</td> 
+                                            <td class="text-center"></td> 
+                                        </tr>
+                                    @endif
+                                    {{-- FIN DEL CÓDIGO AÑADIDO --}}   
+
+
                                     @foreach($trafico->anexos as $anexo)
                                         <tr>
                                             <td class="text-center">{{ $anexo->asunto }}</td>

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class AnexoController extends Controller
 {
@@ -66,11 +67,20 @@ class AnexoController extends Controller
         // Eliminar 'public/' de la ruta antes de guardar en la base de datos
         $rutaArchivo = str_replace('public/', '', $rutaArchivo);
         
-        // Crear el registro del anexo en la base de datos
+
+        // 1. Obtener la hora actual y establecer la zona horaria a Los Ángeles
+        $nowLA = Carbon::now('America/Los_Angeles');
+
+        // 2. Crear el registro del anexo en la base de datos
         $anexo = new Anexo();
         $anexo->descripcion = $descripcion;
         $anexo->archivo = $rutaArchivo;
         $anexo->asunto = $request->input('asunto');
+
+        // 3. Asignar la hora de Los Ángeles a created_at y updated_at
+        $anexo->created_at = $nowLA;
+        $anexo->updated_at = $nowLA;
+
         $anexo->save();
     
         // Relacionar el tráfico y el anexo en la tabla pivot
