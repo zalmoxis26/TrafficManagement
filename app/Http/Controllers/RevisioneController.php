@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Revisione;
+use App\Models\Trafico; // Asegúrate de tenerlo importado
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Http\Requests\RevisioneRequest;
@@ -16,6 +17,8 @@ use Spatie\Permission\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail; // IMPORTANTE
+use App\Mail\RevisionStatusMail;      // IMPORTANTE
 
 class RevisioneController extends Controller
 {
@@ -99,75 +102,38 @@ class RevisioneController extends Controller
      */
     public function update(Request $request, Revisione $revisione)
     {
-    
-       
-        // Obtener el primer tráfico asociado a la revisión
         $trafico = $revisione->traficos()->first();
 
-        // Validar el request, incluyendo el archivo adjunto
         $request->validate([
-            'adjuntoRevision' => 'file|mimes:png,jpg,pdf,doc,docx,xls,xlsx|max:2048', // Ajusta los tipos y tamaño según tus necesidades
+            'adjuntoRevision' => 'file|mimes:png,jpg,pdf,doc,docx,xls,xlsx|max:2048',
         ]);
-    
-        if ($request->input('Revision') === "EN PROCESO" && is_null($revisione->inicioRevision)) {
 
+        if ($request->input('Revision') === "EN PROCESO" && is_null($revisione->inicioRevision)) {
             $request['inicioRevision'] = Carbon::now('America/Los_Angeles')->format('Y-m-d\TH:i');
         } 
 
-    
         if ($request->input('Revision') === "LIBERADA" ) {
-            // Establecer la fecha de fin de la revisión
             $finRevisionRequest = $request->input('finRevision');
-
-            // Si el valor del request es nulo, se usa Carbon::now(), de lo contrario se usa el valor del request
             $revisione->finRevision = is_null($finRevisionRequest)
                 ? Carbon::now('America/Los_Angeles')->format('Y-m-d\TH:i')
                 : Carbon::parse($finRevisionRequest)->format('Y-m-d\TH:i');
             
-            // Convertir las fechas de inicio y fin a instancias de Carbon
             $inicio = Carbon::parse($revisione->inicioRevision);
             $fin = Carbon::parse($revisione->finRevision);
-    
-            // Calcular la diferencia en días, horas y minutos
             $diff = $inicio->diff($fin);
-    
-            $days = $diff->d;
-            $hours = $diff->h;
-            $minutes = $diff->i;
-    
-            // Construir la cadena legible
-            $tiempoRevision = "{$days} dias {$hours} hrs {$minutes} mins";
-    
-            // Almacenar el tiempo de revisión como una cadena legible
-            $revisione->tiempoRevision = $tiempoRevision;
-    
-            // Guardar los cambios
+            $revisione->tiempoRevision = "{$diff->d} dias {$diff->h} hrs {$diff->i} mins";
             $revisione->save();
-    
         }
 
-        // Actualizar el modelo Revisione con los datos del request
-        $revisione->update($request->except('adjuntoRevision')); // Excluir el archivo de los datos actualizados directamente
-    
+        $revisione->update($request->except('adjuntoRevision'));
 
-        // Procesar el archivo adjunto
         if ($request->hasFile('adjuntoRevision')) {
-
-
-            // Verificar si ya hay un archivo de revisión adjunto
             if ($revisione->adjuntoRevision) {
-                $nombreOriginal = pathinfo($revisione->adjuntoRevision, PATHINFO_FILENAME);
-                $extension = pathinfo($revisione->adjuntoRevision, PATHINFO_EXTENSION);
-                $nuevoNombreRevision = $nombreOriginal . '_' . Str::uuid() . '.' . $extension;
-
                 $oldFilePath = storage_path('app/public/' . $revisione->adjuntoRevision);
-                $historialPath = 'Historial/RevisionSustituidaTrafico_' . $revisione->traficos()->first()->id . '/' . $nuevoNombreRevision;
-
-                // Mover el archivo actual a Historial/RevisionSustituida
                 if (File::exists($oldFilePath)) {
+                    $historialPath = 'Historial/RevisionSustituidaTrafico_' . $trafico->id . '/' . pathinfo($revisione->adjuntoRevision, PATHINFO_FILENAME) . '_' . Str::uuid() . '.' . pathinfo($revisione->adjuntoRevision, PATHINFO_EXTENSION);
                     Storage::disk('public')->move($revisione->adjuntoRevision, $historialPath);
 
-                    // Crear un historial para la sustitución de la revisión
                     Historial::create([
                         'trafico_id' => $trafico->id,
                         'nombre' => 'Sustitucion Revision (Anterior)',
@@ -179,78 +145,115 @@ class RevisioneController extends Controller
             }
 
             $file = $request->file('adjuntoRevision');
-            $fileName =  $file->getClientOriginalName();
-            $filePath = $file->storeAs('Revisiones/RevisionTrafico_' . $revisione->traficos()->first()->id , $fileName, 'public');
-    
-            // Guardar el nombre del archivo en la base de datos
-            $revisione->adjuntoRevision = 'Revisiones/RevisionTrafico_' . $revisione->traficos()->first()->id . '/' . $fileName;
+            $fileName = $file->getClientOriginalName();
+            $file->storeAs('Revisiones/RevisionTrafico_' . $trafico->id , $fileName, 'public');
+            $revisione->adjuntoRevision = 'Revisiones/RevisionTrafico_' . $trafico->id . '/' . $fileName;
             $revisione->save();
 
-   
             Historial::create([
                 'trafico_id' => $trafico->id,
                 'nombre' => 'Recepcion Nuevo Archivo Revision',
                 'descripcion' => 'Se han adjuntado archivos de revision.',
                 'hora' => Carbon::now('America/Los_Angeles'),
-                'adjunto' =>  $revisione->adjuntoRevision,
+                'adjunto' => $revisione->adjuntoRevision,
             ]);
         }
 
         if($revisione->correccionFactura === 'SI'){
-               
             $revisione->facturaCorrecta = $revisione->finRevision;
             $revisione->save();
-        
         }
-    
-      
-        if ($trafico) {
 
-            $trafico->Revision = $request->input('Revision');
+        if ($trafico) {
+            $nuevoStatus = $request->input('Revision');
+            $trafico->Revision = $nuevoStatus;
             $trafico->save();
 
-            // Disparar el evento
             event(new RevisionUpdated($trafico));
 
+            // COMENTA EL BUENO Y USA EL DE PRUEBA:
+            // $this->enviarNotificacionRevision($trafico, $nuevoStatus);
+            $this->enviarNotificacionRevisionPrueba($trafico, $nuevoStatus);
+
         }
 
-        
-        if($request->input('Revision') === "LIBERADA" )  {
-            Historial::create([
-                'trafico_id' => $trafico->id,
-                'nombre' => 'Actualizacion Status Revision (Liberada)',
-                'descripcion' => 'La Revision se encuentra Liberada.',
-                'hora' => Carbon::now('America/Los_Angeles'),
-            ]);
-        } else if($request->input('Revision') === "EN ESPERA DE CORRECCIONES") {
-            Historial::create([
-                'trafico_id' => $trafico->id,
-                'nombre' => 'Actualizacion Status Revision (Solicitud de Correciones)',
-                'descripcion' => 'La Revision se encuentra en Espera de Correciones.',
-                'hora' => Carbon::now('America/Los_Angeles'),
-            ]);
-        }else {
-            Historial::create([
-                'trafico_id' => $trafico->id,
-                'nombre' => 'Actualizacion de Revision',
-                'descripcion' => 'La Revision ha sido Actualizada.',
-                'hora' => Carbon::now('America/Los_Angeles'),
-            ]);
-        }
+        // Registro de Historial
+        $nombreHist = $nuevoStatus === "LIBERADA" ? 'Actualizacion Status Revision (Liberada)' : ($nuevoStatus === "EN ESPERA DE CORRECCIONES" ? 'Actualizacion Status Revision (Solicitud de Correciones)' : 'Actualizacion de Revision');
+        Historial::create([
+            'trafico_id' => $trafico->id,
+            'nombre' => $nombreHist,
+            'descripcion' => "La Revision se encuentra en estado: $nuevoStatus.",
+            'hora' => Carbon::now('America/Los_Angeles'),
+        ]);
 
-        
-    
-        // Redirigir a la ruta 'revisiones.index' con un mensaje de éxito
-        return Redirect::route('revisiones.index')
-            ->with('success', 'Revisione updated successfully');
+        return Redirect::route('revisiones.index')->with('success', 'Revisione updated successfully');
     }
+        
+
+        public function destroy($id): RedirectResponse
+        {
+            Revisione::find($id)->delete();
+
+            return Redirect::route('revisiones.index')
+                ->with('success', 'Revisione deleted successfully');
+        }
     
 
-    public function destroy($id): RedirectResponse
-    {
-        Revisione::find($id)->delete();
 
-        return Redirect::route('revisiones.index')
-            ->with('success', 'Revisione deleted successfully');
+    private function enviarNotificacionRevision(Trafico $trafico, string $status): void
+{
+    try {
+        $emailExcluido = 'francisco@cesoftware.com.mx';
+        $idExcluido    = 3;
+
+        // 1) Empresa
+        $emailsEmpresa = ($trafico->empresa && !empty($trafico->empresa->emailNotify))
+            ? collect(explode(',', $trafico->empresa->emailNotify))
+                ->map(fn($e) => trim($e))
+                ->filter(fn($e) => filter_var($e, FILTER_VALIDATE_EMAIL) && $e !== $emailExcluido)
+                ->toArray()
+            : [];
+
+        // 2) Documentadores y 3) Admins
+        $emailsDocumentadores = User::role('documentador')->where('id', '!=', $idExcluido)->pluck('email')
+            ->filter(fn($e) => filter_var($e, FILTER_VALIDATE_EMAIL) && $e !== $emailExcluido)->toArray();
+
+        $emailsAdmins = User::role('admin')->where('id', '!=', $idExcluido)->pluck('email')
+            ->filter(fn($e) => filter_var($e, FILTER_VALIDATE_EMAIL) && $e !== $emailExcluido)->toArray();
+
+        // 4) Destinatarios unificados
+        $to = array_values(array_unique(array_merge($emailsEmpresa, $emailsAdmins)));
+        $cc = array_values(array_unique(array_merge($emailsDocumentadores, ['revisiones@agenciasai.com'])));
+
+        if (!empty($to)) {
+            // Usa el Mailable RevisionStatusMail que creamos antes
+            Mail::to($to)->cc($cc)->send(new \App\Mail\RevisionStatusMail($trafico, $status));
+        }
+
+    } catch (\Throwable $e) {
+        \Log::error("Error enviando correo de revisión: " . $e->getMessage());
     }
 }
+
+
+
+private function enviarNotificacionRevisionPrueba(Trafico $trafico, string $status): void
+{
+    try {
+        // Enviamos a tu correo de prueba, pero usando la lógica de estatus
+        Mail::to('osvaldo@rentasgmp.com')
+            ->send(new \App\Mail\RevisionStatusMail($trafico, $status));
+
+
+    } catch (\Throwable $e) {
+        \Log::error('Error al enviar correo de PRUEBA REVISIÓN', [
+            'error'      => $e->getMessage(),
+            'trafico_id' => $trafico->id ?? null,
+            'status'     => $status
+        ]);
+    }
+}
+
+
+}
+
