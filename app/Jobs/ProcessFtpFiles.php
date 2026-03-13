@@ -584,7 +584,7 @@ class ProcessFtpFiles implements ShouldQueue
                 if ($esActualizacion) {
                     event(new FacturaUpdated($trafico));
                 } else {
-                    $this->enviarFacturaPorCorreoPrueba($trafico);
+                    $this->enviarFacturaPorCorreo($trafico);
                     event(new TraficoCreated($trafico));
                 }
 

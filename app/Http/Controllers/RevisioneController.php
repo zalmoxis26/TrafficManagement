@@ -172,8 +172,8 @@ class RevisioneController extends Controller
             event(new RevisionUpdated($trafico));
 
             // COMENTA EL BUENO Y USA EL DE PRUEBA:
-            // $this->enviarNotificacionRevision($trafico, $nuevoStatus);
-            $this->enviarNotificacionRevisionPrueba($trafico, $nuevoStatus);
+             $this->enviarNotificacionRevision($trafico, $nuevoStatus);
+            //$this->enviarNotificacionRevisionPrueba($trafico, $nuevoStatus);
 
         }
 
