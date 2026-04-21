@@ -51,52 +51,76 @@ class RegisterController extends Controller
     // 1) Guarda en CACHE y envía enlace de verificación al usuario (no se toca la BD)
 
     public function store(Request $request)
-    {
-        
-        // 🚫 1 intento por email por hora
-        $email = strtolower($request->email);
-        if (Cache::has("lock:register:$email")) {
-            return back()->withErrors([
-                'email' => 'Ya se ha enviado una solicitud para este correo. Intenta nuevamente en 1 hora.',
-            ])->withInput();
-        }
+{
+    $email = strtolower($request->email);
 
-        // 🔐 Bloquear por 1 hora
-        Cache::put("lock:register:$email", true, now()->addHour());
+    // 1. Verificar si el correo ya está "bloqueado" por una solicitud previa
+    if (Cache::has("lock:register:$email")) {
+        return back()->withErrors([
+            'email' => 'Ya se ha enviado una solicitud para este correo. Por favor, revisa tu bandeja de entrada o intenta nuevamente en 1 hora.',
+        ])->withInput();
+    }
 
+    // 2. Validación (Movida aquí arriba para que errores de contraseña no activen el bloqueo de 1 hora)
+    $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+        'password' => [
+            'required', 'string', 'min:8', 'confirmed',
+            'regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/',
+        ],
+    ], [
+        'password.regex' => 'La contraseña debe incluir al menos una letra mayúscula, un número y un carácter especial.',
+        'email.unique' => 'Este correo ya está registrado en nuestro sistema.',
+    ]);
 
-        $request->validate([
-            'name' => ['required','string','max:255'],
-            'email' => ['required','string','email','max:255','unique:users,email'],
-            'password' => [
-                'required','string','min:8','confirmed',
-                'regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/',
-            ],
-        ], [
-            'password.regex' => 'La contraseña debe incluir al menos una letra mayúscula, un número y un carácter especial.',
-        ]);
+    // 3. Activar el bloqueo de seguridad (Solo después de pasar la validación)
+    Cache::put("lock:register:$email", true, now()->addHour());
 
-    
-
-
+    try {
         $token = Str::random(64);
 
+        // Guardar datos temporales en cache por 8 horas
         Cache::put("reg:$token", [
             'name'          => $request->name,
             'email'         => $request->email,
             'password_hash' => Hash::make($request->password),
             'created_at'    => now(),
-        ], now()->addHours(8)); // TTL 8h
+        ], now()->addHours(8));
 
-        // Link de verificación (propio) válido 8h
-        $verifyUrl = URL::temporarySignedRoute('register.verify', now()->addHours(8), ['token' => $token]);
+        // Generar Link de verificación firmado
+        $verifyUrl = URL::temporarySignedRoute(
+            'register.verify', 
+            now()->addHours(8), 
+            ['token' => $token]
+        );
 
-        // ENVÍA al usuario (no al admin todavía)
+        // 4. Intentar enviar la notificación
+        // Nota: Asegúrate que VerifyRegistrationEmail implemente "ShouldQueue"
         Notification::route('mail', $request->email)
             ->notify(new \App\Notifications\VerifyRegistrationEmail($verifyUrl, $request->name));
 
-        return back()->with('status', 'Te enviamos un correo para confirmar tu email. Revisa tu bandeja de entrada.');
+        return back()->with('status', 'Te enviamos un correo para confirmar tu email. Revisa tu bandeja de entrada (y la carpeta de spam).');
+
+    } catch (\Exception $e) {
+        // ❌ SI ALGO FALLA (Error de correo, DNS, etc.):
+        
+        // Liberamos el bloqueo de inmediato para que el usuario pueda reintentar
+        Cache::forget("lock:register:$email");
+        
+        // Limpiamos el token generado si existe
+        if (isset($token)) {
+            Cache::forget("reg:$token");
+        }
+
+        // Registramos el error para soporte técnico
+        \Log::error("Error en proceso de registro para $email: " . $e->getMessage());
+
+        return back()->withErrors([
+            'email' => 'Hubo un problema al procesar tu registro (error de envío). Por favor, intenta de nuevo en unos segundos.'
+        ])->withInput();
     }
+}
 
 
 
